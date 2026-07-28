@@ -155,6 +155,8 @@ When `/name` changes, the `validateName` handler fires — without causing `Elem
 
 ### `<Renderer>`
 
+> Source: [`renderer.tsx`](./src/renderer.tsx)
+
 | Prop | Type | Description |
 |------|------|-------------|
 | `spec` | `Spec \| null` | The declarative UI tree |
@@ -164,6 +166,8 @@ When `/name` changes, the `validateName` handler fires — without causing `Elem
 | `loading` | `boolean?` | Suppresses missing-element warnings during streaming |
 
 ### Hooks
+
+> Source: [`hooks.ts`](./src/hooks.ts), [`contexts.tsx`](./src/contexts.tsx)
 
 | Hook | Signature | Description |
 |------|-----------|-------------|
@@ -177,6 +181,8 @@ When `/name` changes, the `validateName` handler fires — without causing `Elem
 
 ### Component contract (`ComponentProps`)
 
+> Source: [`renderer.tsx`](./src/renderer.tsx)
+
 ```ts
 interface ComponentProps {
   element: UIElement;          // current spec element
@@ -186,6 +192,8 @@ interface ComponentProps {
 ```
 
 ### Spec types
+
+> Source: [`spec.ts`](./src/spec.ts)
 
 ```ts
 interface Spec {
@@ -218,21 +226,21 @@ npm test   # 31 pure-logic tests (store + actions), zero framework deps
 
 The demo app (`demo/`) has thirteen self-contained cases:
 
-| Case | What it shows |
-|-----|---------------|
-| **Basic** | Static spec rendering |
-| **Form** | `BoundField` inputs with read-only/editable toggle |
-| **Actions** | `ActionButton` + handler writes timestamp to store |
-| **Large (1000)** | 1000-row × 2-column editable table via `repeat` — edit one cell, only that cell re-renders. Per-row ✕ delete using `{ $index: true }`. |
-| **Table** | 1000-row HTML `<table>` with `<thead>`/`<tbody>` structure built via `repeat` |
-| **Switch** | Conditional rendering via `useValue` — three mutually-exclusive status views |
-| **Detail Modal** | Click a table row → async handler simulates backend call → detail data loads into a separate store path and displays in a Modal |
-| **Two Store** | Two stores, two Renderers side by side — settings panel changes update a live preview only on Apply via a cross-store handler |
-| **Feature Flags** | Dashboard with ToggleField, SliderField, Badge, Alert, and SegmentedField — showcases five Mantine-derived components |
-| **Translations** | Editable translation strings via repeat on a plain object — demonstrates object key iteration with PathLabel and BoundField |
-| **Drag & Drop** | Sortable table with drag-and-drop reordering, add, and remove — powered by @dnd-kit with the store as source of truth |
-| **Watch Validation** | Live validation as you type — the watch directive triggers a handler on store change without re-rendering |
-| **Mantine Table** | Mantine-styled table with pagination — 300 rows, 10 per page, page state in store. Self-contained PaginatedTable component |
+| Case | What it shows | Source |
+|-----|---------------|--------|
+| **Basic** | Static spec rendering | [`BasicCase.tsx`](./demo/src/cases/basic/BasicCase.tsx) · [`spec.json`](./demo/src/cases/basic/spec.json) · [`registry.ts`](./demo/src/cases/basic/registry.ts) |
+| **Form** | `BoundField` inputs with read-only/editable toggle | [`FormCase.tsx`](./demo/src/cases/form/FormCase.tsx) · [`spec.json`](./demo/src/cases/form/spec.json) · [`handlers.ts`](./demo/src/cases/form/handlers.ts) · [`registry.ts`](./demo/src/cases/form/registry.ts) |
+| **Actions** | `ActionButton` + handler writes timestamp to store | [`ActionsCase.tsx`](./demo/src/cases/actions/ActionsCase.tsx) · [`spec.json`](./demo/src/cases/actions/spec.json) · [`handlers.ts`](./demo/src/cases/actions/handlers.ts) · [`registry.ts`](./demo/src/cases/actions/registry.ts) |
+| **Large (1000)** | 1000-row × 2-column editable table via `repeat` — edit one cell, only that cell re-renders. Per-row ✕ delete using `{ $index: true }`. | [`LargeCase.tsx`](./demo/src/cases/large/LargeCase.tsx) · [`buildSpec.ts`](./demo/src/cases/large/buildSpec.ts) · [`handlers.ts`](./demo/src/cases/large/handlers.ts) · [`registry.ts`](./demo/src/cases/large/registry.ts) |
+| **Table** | 1000-row HTML `<table>` with `<thead>`/`<tbody>` structure built via `repeat` | [`TableCase.tsx`](./demo/src/cases/table/TableCase.tsx) · [`buildSpec.ts`](./demo/src/cases/table/buildSpec.ts) · [`handlers.ts`](./demo/src/cases/table/handlers.ts) · [`registry.ts`](./demo/src/cases/table/registry.ts) |
+| **Switch** | Conditional rendering via `useValue` — three mutually-exclusive status views | [`SwitchCase.tsx`](./demo/src/cases/switch/SwitchCase.tsx) · [`spec.json`](./demo/src/cases/switch/spec.json) · [`handlers.ts`](./demo/src/cases/switch/handlers.ts) · [`registry.ts`](./demo/src/cases/switch/registry.ts) |
+| **Detail Modal** | Click a table row → async handler simulates backend call → detail data loads into a separate store path and displays in a Modal | [`DetailModalCase.tsx`](./demo/src/cases/detail-modal/DetailModalCase.tsx) · [`buildSpec.ts`](./demo/src/cases/detail-modal/buildSpec.ts) · [`handlers.ts`](./demo/src/cases/detail-modal/handlers.ts) · [`registry.ts`](./demo/src/cases/detail-modal/registry.ts) |
+| **Two Store** | Two stores, two Renderers side by side — settings panel changes update a live preview only on Apply via a cross-store handler | [`TwoStoreCase.tsx`](./demo/src/cases/two-store/TwoStoreCase.tsx) · [`buildPreviewSpec.ts`](./demo/src/cases/two-store/buildPreviewSpec.ts) · [`buildSettingsSpec.ts`](./demo/src/cases/two-store/buildSettingsSpec.ts) · [`handlers.ts`](./demo/src/cases/two-store/handlers.ts) · [`registry.ts`](./demo/src/cases/two-store/registry.ts) |
+| **Feature Flags** | Dashboard with ToggleField, SliderField, Badge, Alert, and SegmentedField — showcases five Mantine-derived components | [`FeatureFlagsCase.tsx`](./demo/src/cases/feature-flags/FeatureFlagsCase.tsx) · [`buildSpec.ts`](./demo/src/cases/feature-flags/buildSpec.ts) · [`registry.ts`](./demo/src/cases/feature-flags/registry.ts) |
+| **Translations** | Editable translation strings via repeat on a plain object — demonstrates object key iteration with PathLabel and BoundField | [`TranslationsCase.tsx`](./demo/src/cases/translations/TranslationsCase.tsx) · [`buildSpec.ts`](./demo/src/cases/translations/buildSpec.ts) · [`registry.ts`](./demo/src/cases/translations/registry.ts) |
+| **Drag & Drop** | Sortable table with drag-and-drop reordering, add, and remove — powered by @dnd-kit with the store as source of truth | [`DndTableCase.tsx`](./demo/src/cases/dnd-table/DndTableCase.tsx) · [`buildSpec.ts`](./demo/src/cases/dnd-table/buildSpec.ts) · [`registry.ts`](./demo/src/cases/dnd-table/registry.ts) |
+| **Watch Validation** | Live validation as you type — the watch directive triggers a handler on store change without re-rendering | [`WatchValidationCase.tsx`](./demo/src/cases/watch-validation/WatchValidationCase.tsx) · [`buildSpec.ts`](./demo/src/cases/watch-validation/buildSpec.ts) · [`handlers.ts`](./demo/src/cases/watch-validation/handlers.ts) · [`registry.ts`](./demo/src/cases/watch-validation/registry.ts) |
+| **Mantine Table** | Mantine-styled table with pagination — 300 rows, 10 per page, page state in store. Self-contained PaginatedTable component | [`MantineTableCase.tsx`](./demo/src/cases/mantine-table/MantineTableCase.tsx) · [`buildSpec.ts`](./demo/src/cases/mantine-table/buildSpec.ts) · [`handlers.ts`](./demo/src/cases/mantine-table/handlers.ts) · [`registry.ts`](./demo/src/cases/mantine-table/registry.ts) |
 
 ## vs json-render
 
