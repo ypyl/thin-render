@@ -216,12 +216,6 @@ interface ActionBinding {
 }
 ```
 
-## Tests
-
-```bash
-npm test   # 31 pure-logic tests (store + actions), zero framework deps
-```
-
 ## Demo
 
 The demo app (`demo/`) has thirteen self-contained cases:
@@ -242,18 +236,6 @@ The demo app (`demo/`) has thirteen self-contained cases:
 | **Watch Validation** | Live validation as you type — the watch directive triggers a handler on store change without re-rendering | [`WatchValidationCase.tsx`](./demo/src/cases/watch-validation/WatchValidationCase.tsx) · [`buildSpec.ts`](./demo/src/cases/watch-validation/buildSpec.ts) · [`handlers.ts`](./demo/src/cases/watch-validation/handlers.ts) · [`registry.ts`](./demo/src/cases/watch-validation/registry.ts) |
 | **Mantine Table** | Mantine-styled table with pagination — 300 rows, 10 per page, page state in store. Self-contained PaginatedTable component | [`MantineTableCase.tsx`](./demo/src/cases/mantine-table/MantineTableCase.tsx) · [`buildSpec.ts`](./demo/src/cases/mantine-table/buildSpec.ts) · [`handlers.ts`](./demo/src/cases/mantine-table/handlers.ts) · [`registry.ts`](./demo/src/cases/mantine-table/registry.ts) |
 
-## vs json-render
+## Q&A
 
-| | json-render | thin-render |
-|---|-------------|-------------|
-| Re-render scope on cell edit | Full tree (context cascade) | One component |
-| AI streaming (JSONL patches) | ✓ | ✗ |
-| Zod catalog validation | ✓ | ✗ |
-| Directives (`$format`, `$math`) | ✓ | ✗ |
-| `$item` / `$index` in action params | ✓ | ✓ |
-| Devtools | ✓ | ✗ |
-| Vue/Svelte/Solid | ✓ | ✗ |
-| Runtime deps | React + Zod | React only |
-| LOC (core) | ~3,000 | ~700 |
-
-
+See [Q&A.md](./Q&A.md) for answers to common questions about `$state`, `$item`, and `$index` expressions — what they are, where they can be used, when to use each, how they cause re-renders, and how they compare to each other.

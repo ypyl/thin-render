@@ -14,7 +14,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "LLM.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
