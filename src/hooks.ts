@@ -195,3 +195,45 @@ export function useItemPath(expr: unknown): string | undefined {
   if (typeof expr === "string") return expr;
   return undefined;
 }
+
+/**
+ * Resolve a repeat.path expression to an absolute store path.
+ * - string → passthrough (no subscription)
+ * - `{ $item: "<field>" }` → resolved against RepeatPathContext (no subscription)
+ * - `{ $state: "<path>" }` → reads the store value at <path> (subscribes)
+ * - otherwise → undefined
+ */
+export function useResolvedPath(expr: unknown): string | undefined {
+  // $item expression — delegate to useItemPath (context-only, no subscription)
+  if (
+    expr !== null &&
+    typeof expr === "object" &&
+    !Array.isArray(expr) &&
+    typeof (expr as Record<string, unknown>).$item === "string"
+  ) {
+    return useItemPath(expr);
+  }
+
+  // $state expression — read from store (subscribes to the pointer path)
+  if (
+    expr !== null &&
+    typeof expr === "object" &&
+    !Array.isArray(expr) &&
+    typeof (expr as Record<string, unknown>).$state === "string"
+  ) {
+    const pointerPath = (expr as { $state: string }).$state;
+    const resolved = useValue<unknown>(pointerPath);
+    if (typeof resolved === "string") return resolved;
+    if (resolved !== undefined) {
+      console.warn(
+        `thin-render: $state expression at "${pointerPath}" resolved to non-string value, expected a path string`,
+      );
+    }
+    return "";
+  }
+
+  // String passthrough
+  if (typeof expr === "string") return expr;
+
+  return undefined;
+}

@@ -15,7 +15,7 @@ import {
   useEffect,
 } from "react";
 import type { Spec, UIElement, OnMap, WatchMap, RepeatConfig } from "./spec";
-import { useValue, useEmit, useStore, resolveParams, RepeatPathContext, RepeatIndexContext } from "./hooks";
+import { useValue, useEmit, useStore, resolveParams, useResolvedPath, RepeatPathContext, RepeatIndexContext } from "./hooks";
 import { StoreProvider, ActionProvider, ActionContext, BUILTIN_SET_STATE } from "./contexts";
 import type { Store } from "./store";
 import type { Handlers } from "./contexts";
@@ -128,7 +128,9 @@ function RepeatChildren({
   registry,
   loading,
 }: RepeatChildrenProps) {
-  const value = useValue<unknown>(repeat.path);
+  const resolvedPath = useResolvedPath(repeat.path);
+  if (!resolvedPath) return null;
+  const value = useValue<unknown>(resolvedPath);
 
   // Array iteration
   if (Array.isArray(value)) {
@@ -138,7 +140,7 @@ function RepeatChildren({
           const itemObj = item as Record<string, unknown> | undefined;
           const rawKey = repeat.key && itemObj ? itemObj[repeat.key] : undefined;
           const key = rawKey != null && rawKey !== "" ? String(rawKey) : String(index);
-          const basePath = `${repeat.path}/${index}`;
+          const basePath = `${resolvedPath}/${index}`;
 
           return (
             <RepeatScope key={key} path={basePath} index={index}>
@@ -167,7 +169,7 @@ function RepeatChildren({
           const valObj = val as Record<string, unknown> | undefined;
           const rawKey = repeat.key && valObj ? valObj[repeat.key] : undefined;
           const key = rawKey != null && rawKey !== "" ? String(rawKey) : objKey;
-          const basePath = `${repeat.path}/${objKey}`;
+          const basePath = `${resolvedPath}/${objKey}`;
 
           return (
             <RepeatScope key={key} path={basePath} index={index}>

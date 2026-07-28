@@ -15,6 +15,7 @@ import { TranslationsCase } from "./cases/translations/TranslationsCase";
 import { DndTableCase } from "./cases/dnd-table/DndTableCase";
 import { WatchValidationCase } from "./cases/watch-validation/WatchValidationCase";
 import { MantineTableCase } from "./cases/mantine-table/MantineTableCase";
+import { NestedRepeatCase } from "./cases/nested-repeat/NestedRepeatCase";
 
 export function App() {
   return (
@@ -34,6 +35,7 @@ export function App() {
         <Route path="/dnd-table" component={DndTableCase} />
         <Route path="/watch-validation" component={WatchValidationCase} />
         <Route path="/mantine-table" component={MantineTableCase} />
+        <Route path="/nested-repeat" component={NestedRepeatCase} />
         <Route>
           <Container py="xl">
             <Title order={3} mb="md">404 — Page not found</Title>

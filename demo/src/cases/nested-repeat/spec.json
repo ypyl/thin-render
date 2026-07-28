@@ -1,0 +1,36 @@
+{
+  "root": "page",
+  "elements": {
+    "page": {
+      "type": "CaseContainer",
+      "props": {
+        "title": "Nested Repeat via $item Expression",
+        "description": "Two-level repeat: outer iterates over categories, inner iterates over each category's items using { \"$item\": \"items\" } in the repeat path.",
+        "technicalDescription": "Spec\nOuter repeat: path \"/categories\"\n  ├─ CategoryTitle — reads name from scope\n  └─ Inner repeat: path { \"$item\": \"items\" }\n      ├─ BoundField for \"name\"\n      └─ BoundField for \"qty\"\n\nStore\n{ categories: [{ name, items: [{ name, qty }] }] }\n\nFeatures\n• $item expression in repeat.path — resolved against the current RepeatPathContext\n• Nested RepeatScope — each level sets a fully-qualified base path\n• BoundField as repeat children — reads/writes the correct item path\n• CategoryTitle as repeat child — reads category name from scope"
+      },
+      "children": ["categoryList"]
+    },
+    "categoryList": {
+      "type": "CategoryGroup",
+      "repeat": { "path": "/categories" },
+      "children": ["categoryTitle", "itemList"]
+    },
+    "categoryTitle": {
+      "type": "CategoryTitle",
+      "props": {}
+    },
+    "itemList": {
+      "type": "ItemRow",
+      "repeat": { "path": { "$item": "items" } },
+      "children": ["itemName", "itemQty"]
+    },
+    "itemName": {
+      "type": "BoundField",
+      "props": { "bind": "name", "label": "Name" }
+    },
+    "itemQty": {
+      "type": "BoundField",
+      "props": { "bind": "qty", "label": "Qty" }
+    }
+  }
+}

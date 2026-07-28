@@ -1,7 +1,7 @@
 // hooks.test.tsx — tests for all exported hooks.
 import { describe, it, expect, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useStore, useValue, useSetValue, useBound, useEmit, useItemPath, useRepeatPath, useRepeatIndex } from "./hooks";
+import { useStore, useValue, useSetValue, useBound, useEmit, useItemPath, useResolvedPath, useRepeatPath, useRepeatIndex } from "./hooks";
 import { createStore } from "./store";
 import { createWrapper } from "./test-utils";
 import { StoreProvider, ActionProvider } from "./contexts";
@@ -183,6 +183,86 @@ describe("useItemPath", () => {
 
   it("returns undefined for non-string, non-$item", () => {
     const { result } = renderHook(() => useItemPath(42), {
+      wrapper: createWrapper(),
+    });
+    expect(result.current).toBeUndefined();
+  });
+});
+
+// ── useResolvedPath ───────────────────────────────────────────────
+
+describe("useResolvedPath", () => {
+  it("passes through plain strings", () => {
+    const { result } = renderHook(() => useResolvedPath("/items"), {
+      wrapper: createWrapper(),
+    });
+    expect(result.current).toBe("/items");
+  });
+
+  it("resolves $item with field inside repeat scope", () => {
+    const { result } = renderHook(() => useResolvedPath({ $item: "subitems" }), {
+      wrapper: createWrapper({ repeatPath: "/items/3" }),
+    });
+    expect(result.current).toBe("/items/3/subitems");
+  });
+
+  it("resolves $item with empty string to base path", () => {
+    const { result } = renderHook(() => useResolvedPath({ $item: "" }), {
+      wrapper: createWrapper({ repeatPath: "/items/7" }),
+    });
+    expect(result.current).toBe("/items/7");
+  });
+
+  it("returns undefined for $item outside repeat scope", () => {
+    const { result } = renderHook(() => useResolvedPath({ $item: "x" }), {
+      wrapper: createWrapper(),
+    });
+    expect(result.current).toBeUndefined();
+  });
+
+  it("resolves $state by reading the store at the pointer path", () => {
+    const store = createStore({ activeList: "/fruits" });
+    const { result } = renderHook(() => useResolvedPath({ $state: "/activeList" }), {
+      wrapper: createWrapper({ store }),
+    });
+    expect(result.current).toBe("/fruits");
+  });
+
+  it("reacts to $state pointer changes", () => {
+    const store = createStore({ pointer: "/listA" });
+    const { result, rerender } = renderHook(() => useResolvedPath({ $state: "/pointer" }), {
+      wrapper: createWrapper({ store }),
+    });
+    expect(result.current).toBe("/listA");
+
+    act(() => { store.set("/pointer", "/listB"); });
+    rerender();
+    expect(result.current).toBe("/listB");
+  });
+
+  it("returns empty string and warns when $state resolves to non-string", () => {
+    const store = createStore({ bad: 42 });
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { result } = renderHook(() => useResolvedPath({ $state: "/bad" }), {
+      wrapper: createWrapper({ store }),
+    });
+    expect(result.current).toBe("");
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('$state expression at "/bad" resolved to non-string'),
+    );
+    warn.mockRestore();
+  });
+
+  it("returns empty string when $state points to undefined path", () => {
+    const store = createStore({});
+    const { result } = renderHook(() => useResolvedPath({ $state: "/missing" }), {
+      wrapper: createWrapper({ store }),
+    });
+    expect(result.current).toBe("");
+  });
+
+  it("returns undefined for unknown object shape", () => {
+    const { result } = renderHook(() => useResolvedPath({ other: "value" }), {
       wrapper: createWrapper(),
     });
     expect(result.current).toBeUndefined();

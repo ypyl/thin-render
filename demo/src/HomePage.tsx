@@ -81,6 +81,12 @@ const CASES = [
     title: "Mantine Table",
     description: "Mantine-styled table with pagination — 300 rows, 10 per page. Pagination state lives in the store.",
   },
+  {
+    route: "/nested-repeat",
+    emoji: "🪆",
+    title: "Nested Repeat",
+    description: "Two-level nested repeat — categories contain items, inner repeat uses { $item: 'items' } to resolve against the outer scope.",
+  },
 ];
 
 export function HomePage() {

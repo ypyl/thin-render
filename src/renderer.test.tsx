@@ -319,6 +319,112 @@ describe("RepeatChildren", () => {
     expect(Spy.called).toHaveLength(3);
   });
 
+  // ── $item nested repeat ──
+
+  it("renders nested repeat via $item expression", () => {
+    const store = createStore({
+      items: [
+        { name: "A", subitems: [{ val: 1 }, { val: 2 }] },
+        { name: "B", subitems: [{ val: 3 }] },
+      ],
+    });
+    const Spy = makeSpy();
+    const registry: Registry = { Spy };
+    const spec: Spec = {
+      root: "list",
+      elements: {
+        list: { type: "Spy", repeat: { path: "/items" }, children: ["subList"] },
+        subList: { type: "Spy", repeat: { path: { $item: "subitems" } }, children: ["cell"] },
+        cell: { type: "Spy" },
+      },
+    };
+
+    render(<Renderer spec={spec} registry={registry} store={store} />);
+
+    // 1 list + 2 outer rows + (2 + 1) inner cells = 6 renders
+    expect(Spy.called).toHaveLength(6);
+  });
+
+  // ── $state dynamic repeat target ──
+
+  it("renders repeat via $state dynamic target", () => {
+    const store = createStore({
+      activeList: "/fruits",
+      fruits: [{ name: "Apple" }, { name: "Banana" }],
+    });
+    const Spy = makeSpy();
+    const registry: Registry = { Spy };
+    const spec: Spec = {
+      root: "list",
+      elements: {
+        list: { type: "Spy", repeat: { path: { $state: "/activeList" } }, children: ["row"] },
+        row: { type: "Spy" },
+      },
+    };
+
+    render(<Renderer spec={spec} registry={registry} store={store} />);
+
+    // 1 list + 2 rows = 3 renders
+    expect(Spy.called).toHaveLength(3);
+  });
+
+  it("re-renders repeat when $state pointer changes", () => {
+    const store = createStore({
+      pointer: "/listA",
+      listA: [{ name: "A1" }],
+      listB: [{ name: "B1" }, { name: "B2" }],
+    });
+    const Spy = makeSpy();
+    const registry: Registry = { Spy };
+    const spec: Spec = {
+      root: "list",
+      elements: {
+        list: { type: "Spy", repeat: { path: { $state: "/pointer" } }, children: ["row"] },
+        row: { type: "Spy" },
+      },
+    };
+
+    const { rerender } = render(
+      <Renderer spec={spec} registry={registry} store={store} />,
+    );
+
+    // Initial: 1 list + 1 row from listA = 2
+    expect(Spy.called).toHaveLength(2);
+
+    // Switch pointer to listB
+    store.set("/pointer", "/listB");
+    rerender(
+      <Renderer spec={spec} registry={registry} store={store} />,
+    );
+
+    // Now: initial 2 + 1 list + 2 rows from listB = 5 total
+    // (the list re-renders because $state subscription fired)
+    expect(Spy.called).toHaveLength(5);
+  });
+
+  it("renders nothing when $state points to non-string", () => {
+    const store = createStore({ badPointer: 42 });
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const Spy = makeSpy();
+    const registry: Registry = { Spy };
+    const spec: Spec = {
+      root: "list",
+      elements: {
+        list: { type: "Spy", repeat: { path: { $state: "/badPointer" } }, children: ["row"] },
+        row: { type: "Spy" },
+      },
+    };
+
+    render(<Renderer spec={spec} registry={registry} store={store} />);
+
+    // The list element renders; repeat bails out (falsy path), no rows
+    expect(Spy.called).toHaveLength(1);
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('$state expression at "/badPointer"'),
+    );
+    warn.mockRestore();
+  });
+
   it("renders nothing for non-iterable value", () => {
     const store = createStore({ value: "hello" });
     const Spy = makeSpy();

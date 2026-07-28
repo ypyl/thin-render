@@ -5,6 +5,8 @@ export type {
   WatchMap,
   RepeatConfig,
   Spec,
+  ItemExpression,
+  StateExpression,
 } from "./spec";
 export {
   getByPath,
@@ -23,7 +25,7 @@ export {
   type Handlers,
   type ActionContextValue,
 } from "./contexts";
-export { useStore, useValue, useSetValue, useBound, useEmit, resolveParams, useItemPath, useRepeatPath, useRepeatIndex } from "./hooks";
+export { useStore, useValue, useSetValue, useBound, useEmit, resolveParams, useItemPath, useResolvedPath, useRepeatPath, useRepeatIndex } from "./hooks";
 export {
   Renderer,
   type ComponentProps,

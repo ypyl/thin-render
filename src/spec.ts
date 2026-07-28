@@ -23,10 +23,20 @@ export type OnMap = Record<string, ActionBinding | ActionBinding[]>;
 /** Store path → action bindings fired on store mutation (no re-render). */
 export type WatchMap = Record<string, ActionBinding[]>;
 
+/** $item expression: resolved against the current RepeatPathContext. */
+export interface ItemExpression {
+  $item: string;
+}
+
+/** $state expression: resolved by reading the store value at the given path. */
+export interface StateExpression {
+  $state: string;
+}
+
 /** Repeat configuration: render children once per item in a state array. */
 export interface RepeatConfig {
-  /** JSON-Pointer-like path to the array in the store. */
-  path: string;
+  /** Absolute store path, $item expression (resolved against repeat scope), or $state expression (resolved by reading store). */
+  path: string | ItemExpression | StateExpression;
   /** Field name on the item object to use as a stable React key (else index). */
   key?: string;
 }
