@@ -21,12 +21,12 @@ import { getByPath } from "./store";
 
 // ── Repeat scope contexts (used by renderer + hooks) ──────────────
 
-export const RepeatPathContext = createContext<string>("");
+export const PathContext = createContext<string>("");
 export const RepeatIndexContext = createContext<string | number | undefined>(undefined);
 
 /** Hook for descendant components to get parent repeat's base path. */
-export function useRepeatPath(): string {
-  return useContext(RepeatPathContext);
+export function usePath(): string {
+  return useContext(PathContext);
 }
 
 /** Hook for descendant components to get parent repeat's numeric index. */
@@ -141,7 +141,7 @@ export function useEmit(on?: OnMap): (event: string) => Promise<void> | void {
   const ctx: ActionContextValue = ctxRaw;
 
   // Capture repeat scope at the element's position (static per element)
-  const repeatPath = useRepeatPath();
+  const repeatPath = usePath();
   const repeatIdx = useRepeatIndex();
 
   return useMemo(() => {
@@ -181,7 +181,7 @@ export type { ActionContextValue };
  * `{ $item: "" }` → repeatPath. Outside repeat → undefined.
  */
 export function useItemPath(expr: unknown): string | undefined {
-  const base = useRepeatPath();
+  const base = usePath();
   if (
     expr !== null &&
     typeof expr === "object" &&
@@ -199,7 +199,7 @@ export function useItemPath(expr: unknown): string | undefined {
 /**
  * Resolve a repeat.path expression to an absolute store path.
  * - string → passthrough (no subscription)
- * - `{ $item: "<field>" }` → resolved against RepeatPathContext (no subscription)
+ * - `{ $item: "<field>" }` → resolved against PathContext (no subscription)
  * - `{ $state: "<path>" }` → reads the store value at <path> (subscribes)
  * - otherwise → undefined
  */

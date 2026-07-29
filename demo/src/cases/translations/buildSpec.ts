@@ -10,7 +10,7 @@ export function buildTranslationsSpec(): Spec {
         props: {
           title: "Translations Editor",
           description: "Each row is a translation key with its editable value — powered by repeat on a plain object (not an array).",
-          technicalDescription: "Spec\nCaseContainer → StackRow(repeat: /translations, object) → FieldsetRow → [PathLabel, BoundField(bind: \"\")]\nState\n{ translations: Record<string, string>, editingSection: true }\nFeatures\n• repeat — object iteration via Object.entries\n• useRepeatPath — PathLabel extracts last path segment\n• BoundField — two-way inline value editing\n• Spec-driven layout — no imperative JSX in the case component",
+          technicalDescription: "Spec\nCaseContainer → StackRow(repeat: /translations, object) → FieldsetRow → [PathLabel, BoundField(bind: \"\")]\nState\n{ translations: Record<string, string>, editingSection: true }\nFeatures\n• repeat — object iteration via Object.entries\n• usePath — PathLabel extracts last path segment\n• BoundField — two-way inline value editing\n• Spec-driven layout — no imperative JSX in the case component",
         },
         children: ["rows"],
       },

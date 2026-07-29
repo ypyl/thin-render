@@ -37,7 +37,7 @@ When the resolved path is `""` or `undefined`, `RepeatChildren` SHALL render not
 When the value is an array (`Array.isArray`), `RepeatChildren` SHALL iterate via `.map()` with the numeric index, exactly as before.
 
 When the value is a plain object (non-null, non-array, `typeof === "object"`), `RepeatChildren` SHALL iterate via `Object.entries()`. Each entry SHALL produce a scope with:
-- `RepeatPathContext` set to `${resolvedPath}/${objectKey}`
+- `PathContext` set to `${resolvedPath}/${objectKey}`
 - `RepeatIndexContext` set to the numeric position (0, 1, 2, …)
 
 When the value is neither an array nor a plain object, `RepeatChildren` SHALL render nothing.
@@ -54,7 +54,7 @@ Each repeated child is wrapped in a scope that sets `${resolvedPath}/${indexOrKe
 
 #### Scenario: Object iteration renders one child per key
 - **WHEN** the store has `{ settings: { theme: "dark", lang: "en" } }` and a repeat element has `path: "/settings"`
-- **THEN** two children are rendered: one with `RepeatPathContext` at `/settings/theme` and index 0, another at `/settings/lang` and index 1
+- **THEN** two children are rendered: one with `PathContext` at `/settings/theme` and index 0, another at `/settings/lang` and index 1
 
 #### Scenario: Object iteration with repeat.key extracts from value
 - **WHEN** the store has `{ widgets: { a: { label: "Foo" }, b: { label: "Bar" } } }` and a repeat element has `path: "/widgets"` with `key: "label"`

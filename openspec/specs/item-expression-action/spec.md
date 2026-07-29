@@ -31,7 +31,7 @@
 - **THEN** the resolved params contain `{ pos: undefined }`
 
 ### Requirement: useEmit captures repeat scope for param resolution
-`useEmit(on)` SHALL call `useRepeatPath()` and `useRepeatIndex()` to capture the current repeat scope. These values SHALL be passed to `resolveParams` during `emit(event)` calls, so `$item` and `$index` in action params resolve against the element's repeat position. The captured values SHALL be included in the `useMemo` dependency array.
+`useEmit(on)` SHALL call `usePath()` and `useRepeatIndex()` to capture the current repeat scope. These values SHALL be passed to `resolveParams` during `emit(event)` calls, so `$item` and `$index` in action params resolve against the element's repeat position. The captured values SHALL be included in the `useMemo` dependency array.
 
 #### Scenario: emit resolves $item in params to the element's repeat path
 - **WHEN** an ActionButton inside `<RepeatScope path="/items/5">` emits "click" with `on.click.params = { itemPath: { $item: "" } }`

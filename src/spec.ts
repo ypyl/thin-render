@@ -20,10 +20,7 @@ export interface ActionBinding {
 /** Event→action map declared on an element. */
 export type OnMap = Record<string, ActionBinding | ActionBinding[]>;
 
-/** Store path → action bindings fired on store mutation (no re-render). */
-export type WatchMap = Record<string, ActionBinding[]>;
-
-/** $item expression: resolved against the current RepeatPathContext. */
+/** $item expression: resolved against the current PathContext. */
 export interface ItemExpression {
   $item: string;
 }
@@ -50,7 +47,6 @@ export interface UIElement {
   props?: Record<string, unknown>;
   children?: string[];
   on?: OnMap;
-  watch?: WatchMap;
   repeat?: RepeatConfig;
 }
 

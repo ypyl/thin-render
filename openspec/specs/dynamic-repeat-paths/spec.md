@@ -4,7 +4,7 @@
 TBD - created by archiving change dynamic-repeat-paths. Update Purpose after archive.
 ## Requirements
 ### Requirement: useResolvedPath resolves repeat.path expressions
-The `useResolvedPath(expr)` hook SHALL accept a value that is a plain string, `{ $item: "<field>" }`, or `{ $state: "<path>" }`. When `expr` is a string, it SHALL return it unchanged. When `expr` is `{ $item: "<field>" }`, it SHALL delegate to `useItemPath` logic — resolving against the current `RepeatPathContext` without a store subscription. When `expr` is `{ $state: "<path>" }`, it SHALL read the value at `<path>` from the store via `useValue` and return it; this creates a store subscription to `<path>`. When `expr` does not match any recognized shape, it SHALL return `undefined`.
+The `useResolvedPath(expr)` hook SHALL accept a value that is a plain string, `{ $item: "<field>" }`, or `{ $state: "<path>" }`. When `expr` is a string, it SHALL return it unchanged. When `expr` is `{ $item: "<field>" }`, it SHALL delegate to `useItemPath` logic — resolving against the current `PathContext` without a store subscription. When `expr` is `{ $state: "<path>" }`, it SHALL read the value at `<path>` from the store via `useValue` and return it; this creates a store subscription to `<path>`. When `expr` does not match any recognized shape, it SHALL return `undefined`.
 
 #### Scenario: Plain string passed through
 - **WHEN** `useResolvedPath("/items")` is called

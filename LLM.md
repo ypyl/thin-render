@@ -16,7 +16,7 @@
 | **Spec** | JSON tree declaring what to render | `spec.json` — `Spec` type |
 | **Registry** | Maps spec `type` names to React components | `registry.ts` — `Registry` type |
 | **Store** | Path-based state container (external to React) | `createStore({...})` |
-| **Handlers** | Pure functions invoked by actions/watch | `handlers.ts` — `Handlers` type |
+| **Handlers** | Pure functions invoked by actions | `handlers.ts` — `Handlers` type |
 
 A demo case typically has 3–4 files: `spec.json`, `registry.ts`, `handlers.ts` (optional), and a `<Name>Case.tsx` that wires them.
 
@@ -31,7 +31,7 @@ import type { Spec, UIElement, ActionBinding, RepeatConfig, ComponentProps, Hand
 | Type | Shape |
 |------|-------|
 | `Spec` | `{ root: string; elements: Record<string, UIElement> }` |
-| `UIElement` | `{ type: string; props?: Record<string, unknown>; children?: string[]; on?: OnMap; watch?: WatchMap; repeat?: RepeatConfig }` |
+| `UIElement` | `{ type: string; props?: Record<string, unknown>; children?: string[]; on?: OnMap; repeat?: RepeatConfig }` |
 | `ActionBinding` | `{ action: string; params?: Record<string, unknown> }` |
 | `OnMap` | `Record<string, ActionBinding \| ActionBinding[]>` |
 | `WatchMap` | `Record<string, ActionBinding[]>` |
@@ -40,7 +40,7 @@ import type { Spec, UIElement, ActionBinding, RepeatConfig, ComponentProps, Hand
 ### Hooks
 
 ```ts
-import { useBound, useValue, useSetValue, useStore, useItemPath, useRepeatPath, useRepeatIndex } from "thin-render";
+import { useBound, useValue, useSetValue, useStore, usePath } from "thin-render";
 ```
 
 | Hook | Returns | Notes |
@@ -49,9 +49,7 @@ import { useBound, useValue, useSetValue, useStore, useItemPath, useRepeatPath, 
 | `useValue<T>(path)` | `T \| undefined` | Read-only subscription |
 | `useSetValue(path)` | `(v: unknown) => void` | Write-only |
 | `useStore()` | `Store` | Access `store.get()` / `store.set()` |
-| `useItemPath(expr)` | `string \| undefined` | Resolve `$item` in props |
-| `useRepeatPath()` | `string` | Current repeat scope base path |
-| `useRepeatIndex()` | `number \| undefined` | Current repeat index |
+| `usePath()` | `string` | Current repeat scope base path |
 
 ### Component Contract
 
@@ -101,18 +99,17 @@ Path syntax: JSON-Pointer-like, `/`-separated. Leading `/` optional. `""` = root
 
 ## Expression Matrix
 
-| | `on.params` | `watch.params` | `repeat.path` | `watch path` | element `props` |
-|---|:--:|:--:|:--:|:--:|:--:|
-| `{ $state: "/path" }` | ✓ read-once | ✓ read-once | ✓ subscribes | ✗ | ✗ |
-| `{ $item: "field" }` | ✓ path str | ✓ path str | ✓ context only | ✗ | ✗ |
-| `{ $item: "" }` | ✓ base path | ✓ base path | ✓ base path | ✗ | ✗ |
-| `{ $index: true }` | ✓ number | ✓ number | ✗ | ✗ | ✗ |
+| | `on.params` | `repeat.path` | element `props` |
+|---|:--:|:--:|:--:|
+| `{ $state: "/path" }` | ✓ read-once | ✓ subscribes | ✗ |
+| `{ $item: "field" }` | ✓ path str | ✓ context only | ✗ |
+| `{ $item: "" }` | ✓ base path | ✓ base path | ✗ |
+| `{ $index: true }` | ✓ number | ✗ | ✗ |
 
 **Key rules:**
 - `$state` in `repeat.path` subscribes via `useSyncExternalStore` — changing the pointer re-renders the repeat
 - `$item` in `repeat.path` uses context only — no subscription, relies on parent re-render
-- Watch paths are ALWAYS literal strings — no expression support (type-level constraint: `Record<string, ...>`)
-- Props are ALWAYS static — components resolve expressions themselves via `useItemPath(expr)`
+- Props are ALWAYS static — components resolve expressions themselves
 - `$item: ""` returns the repeat base path (e.g., `/items/3`); `$item: "field"` appends (e.g., `/items/3/field`)
 - `$index: false` → `undefined`; use to explicitly opt out
 
@@ -159,22 +156,22 @@ function ActionButton({ element, emit }: ComponentProps) {
 const handlers = { saveDoc: (params, { setState }) => { setState("/savedAt", new Date().toISOString()); } };
 ```
 
-### 4. Watch Validation
+### 4. Reactive Validation (useEffect)
 
-```json
-{ "type": "BoundField", "props": { "bind": "name" }, "watch": { "/name": [{ "action": "validateName" }] } }
+```tsx
+function ValidatingField({ element }: ComponentProps) {
+  const [value, setValue] = useBound<string>(String(element.props?.bind));
+  const store = useStore();
+
+  useEffect(() => {
+    store.set("/errors/name", (value ?? "").length < 3 ? "Too short" : undefined);
+  }, [value]);
+
+  return <input value={value ?? ""} onChange={e => setValue(e.target.value)} />;
+}
 ```
 
-```ts
-const handlers = {
-  validateName: (_params, { getState, setState }) => {
-    const name = getByPath(getState(), "name") as string;
-    setState("/errors/name", (name ?? "").length < 3 ? "Too short" : undefined);
-  },
-};
-```
-
-Watch uses `store.subscribe` — no re-render. Handler writes to a DIFFERENT path to avoid loops.
+Reactive validation via `useValue`/`useEffect` — works everywhere, including inside repeats.
 
 ### 5. Conditional Render (useValue)
 

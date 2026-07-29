@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: RepeatScope exposes repeat index via context
-The `RepeatScope` component SHALL provide both a `RepeatPathContext` (existing) and a `RepeatIndexContext` (new) to its children. The index SHALL be the numeric position of the item in the repeat array.
+The `RepeatScope` component SHALL provide both a `PathContext` (existing) and a `RepeatIndexContext` (new) to its children. The index SHALL be the numeric position of the item in the repeat array.
 
 #### Scenario: useRepeatIndex returns the item's index
 - **WHEN** a component inside `<RepeatScope path="/items/5" index={5}>` calls `useRepeatIndex()`
@@ -30,8 +30,8 @@ The `useItemPath(expr)` hook SHALL accept a value that is either a plain string 
 - **WHEN** `useItemPath({ $item: "x" })` is called outside any RepeatScope
 - **THEN** it returns `undefined`
 
-### Requirement: useRepeatPath and useRepeatIndex are exported
-`useRepeatPath` and `useRepeatIndex` SHALL be exported from `src/index.ts` as public API. `useRepeatPath` is already exported; `useRepeatIndex` is new.
+### Requirement: usePath and useRepeatIndex are exported
+`usePath` and `useRepeatIndex` SHALL be exported from `src/index.ts` as public API. `usePath` is already exported; `useRepeatIndex` is new.
 
 #### Scenario: useRepeatIndex importable from thin-render
 - **WHEN** a consumer writes `import { useRepeatIndex } from "thin-render"`

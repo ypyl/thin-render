@@ -1,7 +1,7 @@
 // test-utils.tsx — shared test wrappers providing Store + Action contexts.
 import { type ReactNode } from "react";
 import { StoreProvider, ActionProvider, BUILTIN_SET_STATE } from "./contexts";
-import { RepeatPathContext, RepeatIndexContext } from "./hooks";
+import { PathContext, RepeatIndexContext } from "./hooks";
 import { createStore, type Store } from "./store";
 import type { Handlers } from "./contexts";
 
@@ -21,11 +21,11 @@ export function createWrapper(opts: WrapperOptions = {}) {
     let inner = children;
     if (opts.repeatPath !== undefined || opts.repeatIndex !== undefined) {
       inner = (
-        <RepeatPathContext.Provider value={opts.repeatPath ?? ""}>
+        <PathContext.Provider value={opts.repeatPath ?? ""}>
           <RepeatIndexContext.Provider value={opts.repeatIndex}>
             {inner}
           </RepeatIndexContext.Provider>
-        </RepeatPathContext.Provider>
+        </PathContext.Provider>
       );
     }
     return (

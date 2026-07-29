@@ -1,7 +1,7 @@
 // hooks.test.tsx — tests for all exported hooks.
 import { describe, it, expect, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useStore, useValue, useSetValue, useBound, useEmit, useItemPath, useResolvedPath, useRepeatPath, useRepeatIndex } from "./hooks";
+import { useStore, useValue, useSetValue, useBound, useEmit, useItemPath, useResolvedPath, usePath, useRepeatIndex } from "./hooks";
 import { createStore } from "./store";
 import { createWrapper } from "./test-utils";
 import { StoreProvider, ActionProvider } from "./contexts";
@@ -116,18 +116,18 @@ describe("useBound", () => {
   });
 });
 
-// ── useRepeatPath / useRepeatIndex ─────────────────────────────────
+// ── usePath / useRepeatIndex ─────────────────────────────────
 
-describe("useRepeatPath", () => {
+describe("usePath", () => {
   it("returns empty string by default", () => {
-    const { result } = renderHook(() => useRepeatPath(), {
+    const { result } = renderHook(() => usePath(), {
       wrapper: createWrapper(),
     });
     expect(result.current).toBe("");
   });
 
   it("returns the repeat path from context", () => {
-    const { result } = renderHook(() => useRepeatPath(), {
+    const { result } = renderHook(() => usePath(), {
       wrapper: createWrapper({ repeatPath: "/items/3" }),
     });
     expect(result.current).toBe("/items/3");

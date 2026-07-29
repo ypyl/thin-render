@@ -1,31 +1,14 @@
-export type {
-  UIElement,
-  ActionBinding,
-  OnMap,
-  WatchMap,
-  RepeatConfig,
-  Spec,
-  ItemExpression,
-  StateExpression,
-} from "./spec";
+export type { Spec } from "./spec";
 export {
   getByPath,
-  immutableSetByPath,
   createStore,
   type Store,
-  type StoreOptions,
-  type Listener,
 } from "./store";
 export {
-  StoreContext,
-  StoreProvider,
-  ActionContext,
-  ActionProvider,
   type Handler,
   type Handlers,
-  type ActionContextValue,
 } from "./contexts";
-export { useStore, useValue, useSetValue, useBound, resolveParams, useItemPath, useRepeatPath, useRepeatIndex } from "./hooks";
+export { useStore, useValue, useSetValue, useBound, usePath } from "./hooks";
 export {
   Renderer,
   type ComponentProps,

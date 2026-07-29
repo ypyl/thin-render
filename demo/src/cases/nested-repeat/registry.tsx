@@ -1,6 +1,6 @@
 // nested-repeat/registry.ts — components for the nested repeat demo.
 import { Paper, Title, Group, Box, Text } from "@mantine/core";
-import { type ComponentProps, useRepeatPath, useValue } from "thin-render";
+import { type ComponentProps, usePath, useValue } from "thin-render";
 import { BoundField } from "../../components/BoundField";
 import { CaseContainer } from "../../components/CaseContainer";
 import type { Registry } from "thin-render";
@@ -16,7 +16,7 @@ function CategoryGroup({ children }: ComponentProps) {
 
 /** Reads the category name from the current repeat scope. Must be a child of the outer repeat. */
 function CategoryTitle({}: ComponentProps) {
-  const base = useRepeatPath();
+  const base = usePath();
   const name = useValue<string>(`${base}/name`);
   return (
     <Title order={5} mb="xs">

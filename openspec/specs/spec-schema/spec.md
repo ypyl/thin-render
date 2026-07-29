@@ -45,7 +45,7 @@ An element SHALL support an `on` field mapping event names (e.g. `"click"`, `"ch
 ### Requirement: Repeat config drives array iteration
 An element SHALL support a `repeat` field `{ path: string | { $item: string } | { $state: string }, key?: string }` causing its `children` to render once per item in the iterable at the resolved path. The `path` field SHALL accept three forms:
 - A plain string — an absolute store path (e.g., `"/items"`)
-- `{ $item: "<field>" }` — resolved against the current `RepeatPathContext` to form an absolute path
+- `{ $item: "<field>" }` — resolved against the current `PathContext` to form an absolute path
 - `{ $state: "<path>" }` — the value at `<path>` in the store is read and used as the target array path
 
 When `key` is provided, items being objects MUST use `item[key]` (stringified) as the React element key; otherwise the array index is used for arrays and the object key for plain objects.
