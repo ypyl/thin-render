@@ -51,7 +51,6 @@ import { useBound, useValue, useSetValue, useEmit, useStore, useItemPath, useRes
 | `useEmit(on?)` | `(event: string) => void` | Dispatch actions; stable ref |
 | `useStore()` | `Store` | Access `store.get()` / `store.set()` |
 | `useItemPath(expr)` | `string \| undefined` | Resolve `$item` in props |
-| `useResolvedPath(expr)` | `string \| undefined` | Resolve repeat.path expressions |
 | `useRepeatPath()` | `string` | Current repeat scope base path |
 | `useRepeatIndex()` | `number \| undefined` | Current repeat index |
 
