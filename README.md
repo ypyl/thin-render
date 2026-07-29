@@ -139,15 +139,6 @@ Renders `row` once per item in `/items`. Inside a repeat, components can use `us
 
 For stable React keys across re-renders, provide a `key` field on the repeat config pointing to a unique field on each item (e.g., `"repeat": { "path": "/items", "key": "id" }`). Without it, the array index is used, which breaks on reorder or delete. The unique ID must come from your data — thin-render does not auto-generate IDs.
 
-### Watch (reactive derivations)
-
-```json
-{ "type": "BoundField", "props": { "bind": "name" },
-  "watch": { "/name": [{ "action": "validateName" }] } }
-```
-
-When `/name` changes, the `validateName` handler fires — without causing `ElementRenderer` to re-render. The handler can read any path and write results (e.g. errors to `/errors/name`), which DOES trigger targeted re-renders in subscribing components. Built on `store.subscribe`, not `useValue` — no re-render from the watch itself.
-
 ## API
 
 ### `<Renderer>`
@@ -218,7 +209,6 @@ interface UIElement {
   props?: Record<string, unknown>;
   children?: string[];
   on?: Record<string, ActionBinding | ActionBinding[]>;
-  watch?: Record<string, ActionBinding[]>;
   repeat?: { path: string; key?: string };
 }
 
