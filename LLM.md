@@ -40,7 +40,7 @@ import type { Spec, UIElement, ActionBinding, RepeatConfig, ComponentProps, Hand
 ### Hooks
 
 ```ts
-import { useBound, useValue, useSetValue, useEmit, useStore, useItemPath, useResolvedPath, useRepeatPath, useRepeatIndex } from "thin-render";
+import { useBound, useValue, useSetValue, useStore, useItemPath, useRepeatPath, useRepeatIndex } from "thin-render";
 ```
 
 | Hook | Returns | Notes |
@@ -48,7 +48,6 @@ import { useBound, useValue, useSetValue, useEmit, useStore, useItemPath, useRes
 | `useBound<T>(path)` | `[T \| undefined, (v: T) => void]` | Two-way bind; subscribes |
 | `useValue<T>(path)` | `T \| undefined` | Read-only subscription |
 | `useSetValue(path)` | `(v: unknown) => void` | Write-only |
-| `useEmit(on?)` | `(event: string) => void` | Dispatch actions; stable ref |
 | `useStore()` | `Store` | Access `store.get()` / `store.set()` |
 | `useItemPath(expr)` | `string \| undefined` | Resolve `$item` in props |
 | `useRepeatPath()` | `string` | Current repeat scope base path |

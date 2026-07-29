@@ -174,7 +174,6 @@ When `/name` changes, the `validateName` handler fires — without causing `Elem
 | `useBound<T>(path)` | `[T \| undefined, (v: T) => void]` | Two-way bind to a path |
 | `useValue<T>(path)` | `T \| undefined` | Read-only subscription to a path |
 | `useSetValue(path)` | `(v: unknown) => void` | Write-only setter for a path |
-| `useEmit(on?)` | `(event: string) => void` | Dispatch actions bound to an element's `on` map |
 | `useRepeatPath()` | `string` | Current repeat scope's base path |
 | `useRepeatIndex()` | `number \| undefined` | Current repeat scope's numeric index |
 | `useItemPath(expr)` | `string \| undefined` | Resolve `$item` expression or pass through string |
