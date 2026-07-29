@@ -97,6 +97,8 @@ const store = createStore({ /* initial state */ });
 | `store.subscribe(path, fn)` | Listen for changes on overlapping paths; returns unsubscribe |
 | `store.getState()` | Full state snapshot |
 
+`getByPath(state, path)` — standalone utility to read a nested value from any object by path. Used inside handlers: `getByPath(getState(), params.id)`
+
 Path syntax: JSON-Pointer-like, `/`-separated. Leading `/` optional. `""` = root.
 
 ## Expression Matrix
