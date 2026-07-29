@@ -179,6 +179,24 @@ When `/name` changes, the `validateName` handler fires — without causing `Elem
 | `useRepeatIndex()` | `number \| undefined` | Current repeat scope's numeric index |
 | `useItemPath(expr)` | `string \| undefined` | Resolve `$item` expression or pass through string |
 
+### Store & utilities
+
+> Source: [`store.ts`](./src/store.ts)
+
+| Export | Signature | Description |
+|--------|-----------|-------------|
+| `createStore(initial?)` | `Store` | Create a path-based external store |
+| `getByPath(state, path)` | `unknown` | Read a nested value from an object by path string |
+
+`Store` instance methods:
+
+| Method | Description |
+|--------|-------------|
+| `store.get(path)` | Read value at path |
+| `store.set(path, value)` | Write path; no-op if value unchanged; notifies overlapping subscribers |
+| `store.subscribe(path, fn)` | Register change listener; returns unsubscribe |
+| `store.getState()` | Full state snapshot |
+
 ### Component contract (`ComponentProps`)
 
 > Source: [`renderer.tsx`](./src/renderer.tsx)
