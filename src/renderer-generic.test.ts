@@ -300,7 +300,6 @@ describe("renderGeneric", () => {
     const spec: Spec = {
       root: "list",
       elements: {
-        // @ts-expect-error — testing missing children
         list: { type: "Wrapper", repeat: { path: "/items" } },
       },
     };
@@ -315,7 +314,6 @@ describe("renderGeneric", () => {
     const spec: Spec = {
       root: "list",
       elements: {
-        // @ts-expect-error — testing missing children
         list: { type: "Wrapper", repeat: { path: "/dict" } },
       },
     };
