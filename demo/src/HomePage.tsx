@@ -87,6 +87,12 @@ const CASES = [
     title: "DOCX Export",
     description: "Edit data in an interactive table, then export to a downloadable .docx file — demonstrates renderGeneric with separate React and DOCX specs, registry-side expression resolution via ctx, and the docx npm package.",
   },
+  {
+    route: "/xlsx-export",
+    emoji: "📊",
+    title: "XLSX Export",
+    description: "Edit data in a table, then export to a downloadable .xlsx spreadsheet — demonstrates renderGeneric with the xlsx (SheetJS) package.",
+  },
 ];
 
 export function HomePage() {

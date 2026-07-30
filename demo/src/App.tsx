@@ -16,6 +16,7 @@ import { DndTableCase } from "./cases/dnd-table/DndTableCase";
 import { MantineTableCase } from "./cases/mantine-table/MantineTableCase";
 import { NestedRepeatCase } from "./cases/nested-repeat/NestedRepeatCase";
 import { DocxExportCase } from "./cases/docx-export/DocxExportCase";
+import { XlsxExportCase } from "./cases/xlsx-export/XlsxExportCase";
 
 export function App() {
   return (
@@ -36,6 +37,7 @@ export function App() {
         <Route path="/mantine-table" component={MantineTableCase} />
         <Route path="/nested-repeat" component={NestedRepeatCase} />
         <Route path="/docx-export" component={DocxExportCase} />
+        <Route path="/xlsx-export" component={XlsxExportCase} />
         <Route>
           <Container py="xl">
             <Title order={3} mb="md">404 — Page not found</Title>

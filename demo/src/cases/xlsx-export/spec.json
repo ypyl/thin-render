@@ -1,0 +1,58 @@
+{
+  "root": "case",
+  "elements": {
+    "case": {
+      "type": "CaseContainer",
+      "props": {
+        "title": "XLSX Export",
+        "description": "Edit data in the table below, then click Download XLSX to export it as a spreadsheet — demonstrates renderGeneric with separate React and XLSX specs sharing one store.",
+        "technicalDescription": "Spec\nReact: CaseContainer → { BoundField(title), Table → [THead → Tr → Th×3, TBody(repeat:/rows) → Tr → [Td → BoundField×3]] }\nXLSX: Workbook → Sheet → [XlsxRow(header), SheetData(repeat:/rows) → XlsxRow → XlsxCell($item:field)]\nState\n{ title, rows: [{ id, name, qty, price }] }\nFeatures\n• Two specs — React spec for interactive preview, XLSX spec for export, both using the same store\n• renderGeneric — walks the XLSX spec tree, passes raw props + ctx to registry functions\n• Expression resolution in registry — resolve() helper reads $state/$item from store via ctx\n• ctx.basePath scoping — inside repeat, resolve() composes absolute paths from ctx.basePath\n• xlsx builders — registry maps spec types to Workbook, Sheet, XlsxRow, XlsxCell\n• XLSX.write + Blob download — one-click .xlsx generation"
+      },
+      "children": ["titleField", "dataTable"]
+    },
+    "titleField": {
+      "type": "BoundField",
+      "props": { "bind": "/title", "label": "Report Title" }
+    },
+    "dataTable": {
+      "type": "Table",
+      "props": {},
+      "children": ["tableHead", "tableBody"]
+    },
+    "tableHead": {
+      "type": "THead",
+      "children": ["headerRow"]
+    },
+    "headerRow": {
+      "type": "Tr",
+      "children": ["thName", "thQty", "thPrice"]
+    },
+    "thName": { "type": "Th", "props": { "text": "Name" } },
+    "thQty": { "type": "Th", "props": { "text": "Qty" } },
+    "thPrice": { "type": "Th", "props": { "text": "Price" } },
+    "tableBody": {
+      "type": "TBody",
+      "repeat": { "path": "/rows", "key": "id" },
+      "children": ["row"]
+    },
+    "row": {
+      "type": "Tr",
+      "children": ["cellName", "cellQty", "cellPrice"]
+    },
+    "cellName": { "type": "Td", "children": ["nameField"] },
+    "cellQty": { "type": "Td", "children": ["qtyField"] },
+    "cellPrice": { "type": "Td", "children": ["priceField"] },
+    "nameField": {
+      "type": "BoundField",
+      "props": { "bind": "name", "label": "" }
+    },
+    "qtyField": {
+      "type": "BoundField",
+      "props": { "bind": "qty", "label": "" }
+    },
+    "priceField": {
+      "type": "BoundField",
+      "props": { "bind": "price", "label": "" }
+    }
+  }
+}
