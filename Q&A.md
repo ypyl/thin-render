@@ -207,6 +207,52 @@ In short: `$state` answers "what value?", `$item` answers "what path?", `$index`
 
 ## Actions & Handlers
 
+### What is `renderGeneric` and when should I use it?
+
+`renderGeneric` is a pure function that walks a spec tree and calls your builder functions instead of React components. Use it for one-shot, non-interactive output — DOCX reports, PDF invoices, CSV exports, plain text, or any format.
+
+```ts
+import { renderGeneric, type GenericRegistry } from "thin-render";
+
+const registry: GenericRegistry = {
+  Paragraph: (props, children) => new Paragraph({ children }),
+  Heading:   (props, _children) => new Paragraph({ text: String(props.text), heading: "HEADING_1" }),
+};
+```
+
+**Key differences from the React `<Renderer>`:**
+
+| | React `<Renderer>` | `renderGeneric` |
+|---|---|---|
+| **Output** | React component tree | Whatever your registry returns |
+| **Expression resolution** | Components use hooks (`useBound`, `useValue`) | Props resolved automatically before registry call |
+| **Subscriptions** | `useSyncExternalStore` per path | Read-once from store at generation time |
+| **Actions (`on`)** | `emit` dispatches handlers | Ignored — no interactivity |
+| **Repeat** | React reconciliation | Plain loop, pushes results to array |
+| **Return value** | React element | `unknown` — cast to your output type |
+
+**Typical usage:** The React renderer powers an interactive data view. The user edits, filters, and reviews data. A "Export" button handler calls `renderGeneric` with a separate DOCX spec to produce a downloadable report — same store, same expression language, different spec.
+
+### What goes in a `GenericRegistry`?
+
+Each entry is a function `(props, children) => unknown`:
+
+- `props` — the element's `props` with all `$state`/`$item`/`$index` expressions already resolved to plain values. No expression objects reach your function.
+- `children` — a flat array of whatever your child registry functions returned.
+
+```ts
+const registry: GenericRegistry = {
+  // Leaf: no children
+  TextRun: (props) => new TextRun({ text: String(props.text) }),
+  // Container: receives children array from child elements
+  Paragraph: (_props, children) => new Paragraph({ children }),
+  // Repeat container: children are flattened results of all iterations
+  Table: (_props, children) => new Table({ rows: children }),
+};
+```
+
+The return type is `unknown` — TypeScript won't enforce homogeneity. Cast `renderGeneric`'s result at the call site: `renderGeneric(...) as Document`.
+
 ### What is a handler?
 
 A handler is a **pure function** that runs in response to an action. It lives outside React — no hooks, no JSX, no component lifecycle. The contract:

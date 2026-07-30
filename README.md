@@ -1,8 +1,8 @@
 # thin-render
 
-A ~700-line spec-driven React renderer with **granular per-path re-renders**. Edit one cell in a 1000-row table — only that one cell's component re-renders.
+A ~750-line spec-driven renderer with **granular per-path re-renders** for React components and a zero-dependency generic renderer for non-React targets (DOCX, PDF, CSV, etc.). Edit one cell in a 1000-row table — only that one cell's component re-renders.
 
-Built as a minimal alternative to `@json-render/react`, dropping AI streaming, Zod validation, directives, devtools, and multi-framework output. Just the rendering core, a path-based store, and an action system.
+Built as a minimal alternative to `@json-render/react`, dropping AI streaming, Zod validation, directives, devtools, and multi-framework output. Just the rendering core, a path-based store, an action system, and a generic renderer for non-React output.
 
 **[Live demo →](https://ypyl.github.io/thin-render/)**
 
@@ -181,6 +181,51 @@ For stable React keys across re-renders, provide a `key` field on the repeat con
 | `store.set(path, value)` | Write path; no-op if value unchanged; notifies overlapping subscribers |
 | `store.subscribe(path, fn)` | Register change listener; returns unsubscribe |
 | `store.getState()` | Full state snapshot |
+
+### `renderGeneric`
+
+> Source: [`renderer-generic.ts`](./src/renderer-generic.ts)
+
+A pure function that walks a spec tree, resolves `$state`/`$item`/`$index` in props, and calls user-provided builder functions — no React, no subscriptions, no JSX. Use it to generate DOCX, PDF, CSV, plain strings, or any format from the same spec schema and store.
+
+| Export | Signature | Description |
+|--------|-----------|-------------|
+| `renderGeneric(spec, store, registry)` | `unknown` | Walk the spec, resolve expressions, call registry builders |
+| `GenericRegistry` | `Record<string, (props, children) => unknown>` | Map of spec type → builder function |
+
+```ts
+import { renderGeneric, createStore, type Spec, type GenericRegistry } from "thin-render";
+import { Document, Paragraph, TextRun, Packer } from "docx";
+
+const store = createStore({ title: "Report", rows: [{ name: "Widget", qty: 42 }] });
+
+const spec: Spec = {
+  root: "doc",
+  elements: {
+    doc:   { type: "Document", children: ["section"] },
+    section: { type: "Section", children: ["heading", "list"] },
+    heading: { type: "Heading", props: { text: { $state: "/title" } } },
+    list:  { type: "Table", repeat: { path: "/rows" }, children: ["row"] },
+    row:   { type: "Row", children: ["name", "qty"] },
+    name:  { type: "Cell", props: { text: { $item: "name" } } },
+    qty:   { type: "Cell", props: { text: { $item: "qty" } } },
+  },
+};
+
+const registry: GenericRegistry = {
+  Document: (_p, children) => new Document({ sections: children }),
+  Section:  (_p, children) => ({ children }),
+  Heading:  (props) => new Paragraph({ text: String(props.text) }),
+  Table:    (_p, children) => new Table({ rows: children }),
+  Row:      (_p, children) => new TableRow({ children }),
+  Cell:     (props) => new TableCell({ children: [new Paragraph(String(props.text))] }),
+};
+
+const doc = renderGeneric(spec, store, registry) as Document;
+const blob = await Packer.toBlob(doc);
+```
+
+Registry functions receive resolved props (all `$state`/`$item`/`$index` already resolved to plain values) and rendered children as a flat array. The renderer handles repeat iteration, expression resolution, and tree walking — your registry just builds the output objects.
 
 ### Component contract (`ComponentProps`)
 

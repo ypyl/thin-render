@@ -15,3 +15,8 @@ export {
   type Registry,
   type RendererProps,
 } from "./renderer";
+export {
+  renderGeneric,
+  type GenericRegistry,
+  type RenderContext,
+} from "./renderer-generic";

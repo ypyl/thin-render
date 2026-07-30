@@ -18,6 +18,7 @@ import {
 } from "./contexts";
 import type { OnMap, ActionBinding } from "./spec";
 import { getByPath } from "./store";
+import { resolveExpressions, resolveRepeatPath } from "./expressions";
 
 // ── Repeat scope contexts (used by renderer + hooks) ──────────────
 
@@ -89,44 +90,7 @@ export function resolveParams(
   repeatBasePath?: string,
   repeatIndex?: string | number,
 ): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  for (const [key, val] of Object.entries(params)) {
-    if (
-      val !== null &&
-      typeof val === "object" &&
-      !Array.isArray(val)
-    ) {
-      const obj = val as Record<string, unknown>;
-      // $state: read from store
-      if (typeof obj.$state === "string") {
-        out[key] = getByPath(getState(), obj.$state);
-      }
-      // $item: absolute state path from repeat scope
-      else if (typeof obj.$item === "string") {
-        out[key] = repeatBasePath
-          ? obj.$item === ""
-            ? repeatBasePath
-            : `${repeatBasePath}/${obj.$item}`
-          : undefined;
-      }
-      // $index: numeric repeat index
-      else if ("$index" in obj) {
-        out[key] = (obj.$index as boolean) ? repeatIndex : undefined;
-      }
-      // Recurse into nested plain objects
-      else {
-        out[key] = resolveParams(
-          obj,
-          getState,
-          repeatBasePath,
-          repeatIndex,
-        );
-      }
-    } else {
-      out[key] = val;
-    }
-  }
-  return out;
+  return resolveExpressions(params, getState, repeatBasePath, repeatIndex);
 }
 
 /**
@@ -182,18 +146,7 @@ export type { ActionContextValue };
  */
 export function useItemPath(expr: unknown): string | undefined {
   const base = usePath();
-  if (
-    expr !== null &&
-    typeof expr === "object" &&
-    !Array.isArray(expr) &&
-    typeof (expr as Record<string, unknown>).$item === "string"
-  ) {
-    const field = (expr as { $item: string }).$item;
-    if (!base) return undefined;
-    return field === "" ? base : `${base}/${field}`;
-  }
-  if (typeof expr === "string") return expr;
-  return undefined;
+  return resolveRepeatPath(expr, undefined, base);
 }
 
 /**
@@ -204,14 +157,15 @@ export function useItemPath(expr: unknown): string | undefined {
  * - otherwise → undefined
  */
 export function useResolvedPath(expr: unknown): string | undefined {
-  // $item expression — delegate to useItemPath (context-only, no subscription)
+  // $item expression — delegate to resolveRepeatPath (context-only, no subscription)
   if (
     expr !== null &&
     typeof expr === "object" &&
     !Array.isArray(expr) &&
     typeof (expr as Record<string, unknown>).$item === "string"
   ) {
-    return useItemPath(expr);
+    const base = usePath();
+    return resolveRepeatPath(expr, undefined, base);
   }
 
   // $state expression — read from store (subscribes to the pointer path)

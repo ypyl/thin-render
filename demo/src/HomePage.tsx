@@ -81,6 +81,12 @@ const CASES = [
     title: "Nested Repeat",
     description: "Two-level nested repeat — categories contain items, inner repeat uses { $item: 'items' } to resolve against the outer scope.",
   },
+  {
+    route: "/docx-export",
+    emoji: "📄",
+    title: "DOCX Export",
+    description: "Edit data in an interactive table, then export to a downloadable .docx file — demonstrates renderGeneric with separate React and DOCX specs, registry-side expression resolution via ctx, and the docx npm package.",
+  },
 ];
 
 export function HomePage() {
