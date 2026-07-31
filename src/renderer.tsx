@@ -227,20 +227,24 @@ export function Renderer({
   if (!spec.elements[spec.root]) return null;
 
   return (
-    <StoreProvider store={store}>
-      <ActionProvider
-        handlers={handlers}
-        builtins={{ setState: BUILTIN_SET_STATE }}
-        store={store}
-      >
-        <_ElementRenderer
-          elementKey={spec.root}
-          spec={spec}
-          registry={registry}
-          loading={loading}
-        />
-      </ActionProvider>
-    </StoreProvider>
+    <PathContext.Provider value="">
+      <RepeatIndexContext.Provider value={undefined}>
+        <StoreProvider store={store}>
+          <ActionProvider
+            handlers={handlers}
+            builtins={{ setState: BUILTIN_SET_STATE }}
+            store={store}
+          >
+            <_ElementRenderer
+              elementKey={spec.root}
+              spec={spec}
+              registry={registry}
+              loading={loading}
+            />
+          </ActionProvider>
+        </StoreProvider>
+      </RepeatIndexContext.Provider>
+    </PathContext.Provider>
   );
 }
 

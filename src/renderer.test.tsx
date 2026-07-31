@@ -5,6 +5,7 @@ import { type ReactNode, createElement } from "react";
 import { Renderer, type ComponentProps, type Registry } from "./renderer";
 import { createStore } from "./store";
 import type { Spec, UIElement } from "./spec";
+import { usePath, useRepeatIndex } from "./hooks";
 
 // ── Spy components ────────────────────────────────────────────────
 
@@ -441,6 +442,182 @@ describe("RepeatChildren", () => {
 
     // Only the list container, no rows (string is not iterable)
     expect(Spy.called).toHaveLength(1);
+  });
+});
+
+// ── Tests: Nested renderer path scope boundary ─────────────────────
+
+/** Component that captures usePath() value. */
+function makePathCapture() {
+  const captured: string[] = [];
+  function CapturePath({ element, children }: ComponentProps) {
+    captured.push(usePath());
+    return createElement("div", { "data-testid": "path-capture" }, children);
+  }
+  return { Component: CapturePath as typeof CapturePath, captured };
+}
+
+/** Component that captures useRepeatIndex() value. */
+function makeIndexCapture() {
+  const captured: (string | number | undefined)[] = [];
+  function CaptureIndex({ element, children }: ComponentProps) {
+    captured.push(useRepeatIndex());
+    return createElement("div", { "data-testid": "index-capture" }, children);
+  }
+  return { Component: CaptureIndex as typeof CaptureIndex, captured };
+}
+
+describe("Nested renderer path scope boundary", () => {
+  it("nested renderer resets PathContext to empty string", () => {
+    // Outer repeat at /items, row 0 renders a nested Renderer.
+    // A component inside the nested Renderer should see usePath() = "".
+    const store = createStore({
+      items: [{ name: "A", subSpec: { root: "inner", elements: { inner: { type: "CapturePath" } } } }],
+    });
+    const Spy = makeSpy();
+    const { Component: CapturePath, captured } = makePathCapture();
+    const registry: Registry = { Spy, CapturePath };
+    const spec: Spec = {
+      root: "list",
+      elements: {
+        list: { type: "Spy", repeat: { path: "/items" }, children: ["row"] },
+        row: { type: "Spy" },
+      },
+    };
+
+    // Make the row component also render a nested Renderer
+    const { container } = render(
+      <Renderer spec={spec} registry={registry} store={store} />,
+    );
+
+    // Now we need the row's component to render a nested Renderer.
+    // Instead, build a spec where a single element's children include a nested renderer.
+    // Simpler: use a component that explicitly renders a nested Renderer.
+    // Let's use a custom component approach.
+  });
+
+  it("nested renderer resets PathContext to empty string", () => {
+    const store = createStore({
+      items: [{ name: "A" }],
+    });
+    const { Component: CapturePath, captured } = makePathCapture();
+    const Spy = makeSpy();
+
+    // The outer spec has a repeat; the row renders a component that wraps a nested Renderer
+    const outerSpec: Spec = {
+      root: "list",
+      elements: {
+        list: { type: "Spy", repeat: { path: "/items" }, children: ["row"] },
+        row: { type: "RowWithNested" },
+      },
+    };
+
+    // Custom component: renders a nested Renderer + captures outer path
+    function RowWithNested({ element, children }: ComponentProps) {
+      const nestedSpec: Spec = {
+        root: "cap",
+        elements: {
+          cap: { type: "CapturePath" },
+        },
+      };
+      return createElement(
+        "div",
+        { "data-testid": "row-with-nested" },
+        createElement(Renderer, { spec: nestedSpec, registry: { CapturePath }, store }),
+      );
+    }
+
+    const registry: Registry = { Spy, CapturePath, RowWithNested };
+
+    render(<Renderer spec={outerSpec} registry={registry} store={store} />);
+
+    // The CapturePath inside the nested Renderer should see ""
+    expect(captured).toContain("");
+  });
+
+  it("nested renderer resets RepeatIndexContext to undefined", () => {
+    const store = createStore({
+      items: [{ name: "A" }],
+    });
+    const { Component: CaptureIndex, captured } = makeIndexCapture();
+    const Spy = makeSpy();
+
+    const outerSpec: Spec = {
+      root: "list",
+      elements: {
+        list: { type: "Spy", repeat: { path: "/items" }, children: ["row"] },
+        row: { type: "RowWithNested" },
+      },
+    };
+
+    function RowWithNested({ element, children }: ComponentProps) {
+      const nestedSpec: Spec = {
+        root: "cap",
+        elements: {
+          cap: { type: "CaptureIndex" },
+        },
+      };
+      return createElement(
+        "div",
+        { "data-testid": "row-with-nested" },
+        createElement(Renderer, { spec: nestedSpec, registry: { CaptureIndex }, store }),
+      );
+    }
+
+    const registry: Registry = { Spy, CaptureIndex, RowWithNested };
+
+    render(<Renderer spec={outerSpec} registry={registry} store={store} />);
+
+    // The CaptureIndex inside the nested Renderer should see undefined
+    expect(captured).toContain(undefined);
+  });
+
+  it("outer repeat scope unaffected by nested renderer", () => {
+    const store = createStore({
+      items: [{ name: "A" }, { name: "B" }],
+    });
+    const { Component: CapturePath, captured } = makePathCapture();
+    const Spy = makeSpy();
+
+    // outerPath captures usePath() at the row level (should get /items/N)
+    function OuterPathCapture({ element, children }: ComponentProps) {
+      captured.push(usePath());
+      return createElement("div", { "data-testid": "outer-path" }, children);
+    }
+
+    function RowWithNested({ element, children }: ComponentProps) {
+      // Capture outer path (should be /items/N)
+      captured.push(usePath());
+      const nestedSpec: Spec = {
+        root: "cap",
+        elements: {
+          cap: { type: "CapturePath" },
+        },
+      };
+      return createElement(
+        "div",
+        { "data-testid": "row-with-nested" },
+        createElement(Renderer, { spec: nestedSpec, registry: { CapturePath }, store }),
+      );
+    }
+
+    const outerSpec: Spec = {
+      root: "list",
+      elements: {
+        list: { type: "Spy", repeat: { path: "/items" }, children: ["row"] },
+        row: { type: "RowWithNested" },
+      },
+    };
+
+    const registry: Registry = { Spy, CapturePath, RowWithNested, OuterPathCapture };
+
+    render(<Renderer spec={outerSpec} registry={registry} store={store} />);
+
+    // Outer path captures should see /items/0 and /items/1 (not "")
+    expect(captured).toContain("/items/0");
+    expect(captured).toContain("/items/1");
+    // The nested Renderer should see ""
+    expect(captured).toContain("");
   });
 });
 
