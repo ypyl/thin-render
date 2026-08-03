@@ -110,9 +110,18 @@ export function useEmit(on?: OnMap): (event: string) => Promise<void> | void {
 
   return useMemo(() => {
     async function emit(eventName: string): Promise<void> {
-      if (!on) return;
+      if (!on) {
+        console.warn(`thin-render: emit("${eventName}") called but element has no "on" bindings`);
+        return;
+      }
       const binding = on[eventName];
-      if (!binding) return;
+      if (!binding) {
+        console.warn(
+          `thin-render: emit("${eventName}") — event not found in on map. ` +
+            `Available events: ${Object.keys(on).join(", ") || "(none)"}`,
+        );
+        return;
+      }
       const bindings: ActionBinding[] = Array.isArray(binding)
         ? binding
         : [binding];

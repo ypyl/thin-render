@@ -279,12 +279,40 @@ describe("useEmit", () => {
     expect(typeof result.current).toBe("function");
   });
 
-  it("returns a no-op function that resolves undefined", async () => {
+  it("warns when emit called with no on map", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const { result } = renderHook(() => useEmit(), {
       wrapper: createWrapper(),
     });
-    // Calling emit with no on map should be a no-op (resolves undefined)
+
     await expect(result.current("click")).resolves.toBeUndefined();
+
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('thin-render: emit("click") called but element has no "on" bindings'),
+    );
+    warn.mockRestore();
+  });
+
+  it("warns when event name is not in on map and lists available events", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const handler = vi.fn();
+    const handlers = { a: handler };
+    const on = { change: { action: "a" }, submit: { action: "a" } };
+
+    const { result } = renderHook(() => useEmit(on), {
+      wrapper: createWrapper({ handlers }),
+    });
+
+    await expect(result.current("click")).resolves.toBeUndefined();
+
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('emit("click") — event not found'),
+    );
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining("Available events: change, submit"),
+    );
+    expect(handler).not.toHaveBeenCalled();
+    warn.mockRestore();
   });
 
   it("dispatches action and calls handler with resolved params", async () => {
@@ -346,7 +374,24 @@ describe("useEmit", () => {
     expect(h2).toHaveBeenCalledTimes(1);
   });
 
-  it("emits nothing for unknown event name", async () => {
+  it("warns when on map is empty (no keys)", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const on: Record<string, unknown> = {};
+
+    const { result } = renderHook(() => useEmit(on), {
+      wrapper: createWrapper(),
+    });
+
+    await expect(result.current("click")).resolves.toBeUndefined();
+
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining("Available events: (none)"),
+    );
+    warn.mockRestore();
+  });
+
+  it("warns and does not dispatch for unknown event name", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const handler = vi.fn();
     const handlers = { a: handler };
     const on = { click: { action: "a" } };
@@ -360,6 +405,13 @@ describe("useEmit", () => {
     });
 
     expect(handler).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('emit("unknown") — event not found'),
+    );
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining("Available events: click"),
+    );
+    warn.mockRestore();
   });
 
   it("resolves $item inside repeat scope", async () => {
