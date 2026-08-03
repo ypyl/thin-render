@@ -1,8 +1,8 @@
 // hooks.test.tsx — tests for all exported hooks.
 import { describe, it, expect, vi } from "vitest";
-import { renderHook, act } from "@testing-library/react";
-import { useStore, useValue, useSetValue, useBound, useEmit, useItemPath, useResolvedPath, usePath, useRepeatIndex } from "./hooks";
-import { createStore } from "./store";
+import { renderHook, act, render } from "@testing-library/react";
+import { useStore, useValue, useSetValue, useBound, useSelector, useEmit, useItemPath, useResolvedPath, usePath, useRepeatIndex } from "./hooks";
+import { createStore, getByPath } from "./store";
 import { createWrapper } from "./test-utils";
 import { StoreProvider, ActionProvider } from "./contexts";
 
@@ -113,6 +113,102 @@ describe("useBound", () => {
 
     expect(result.current[0]).toBe("Bob");
     expect(store.get("/name")).toBe("Bob");
+  });
+});
+
+// ── useSelector ───────────────────────────────────────────────────
+
+describe("useSelector", () => {
+  it("returns a derived value from the store", () => {
+    const store = createStore({ editKey: "Main" });
+    const { result } = renderHook(
+      () => useSelector((s) => getByPath(s, "/editKey") === "Main"),
+      { wrapper: createWrapper({ store }) },
+    );
+    expect(result.current).toBe(true);
+  });
+
+  it("derives values across multiple paths", () => {
+    const store = createStore({ a: 1, b: 2 });
+    const { result } = renderHook(
+      () => useSelector((s) => getByPath(s, "/a") + getByPath(s, "/b")),
+      { wrapper: createWrapper({ store }) },
+    );
+    expect(result.current).toBe(3);
+  });
+
+  it("re-renders only when the selected value changes", () => {
+    const store = createStore({ editKey: "A" });
+    let renders = 0;
+    function IsMain() {
+      renders++;
+      const isMain = useSelector((s) => getByPath(s, "/editKey") === "Main");
+      return <div>{isMain ? "yes" : "no"}</div>;
+    }
+    const { container } = render(<IsMain />, { wrapper: createWrapper({ store }) });
+    expect(renders).toBe(1);
+    expect(container.textContent).toBe("no");
+
+    // Derived value unchanged (false → false): no re-render
+    act(() => {
+      store.set("/editKey", "B");
+    });
+    expect(renders).toBe(1);
+
+    // Unrelated path write: no re-render
+    act(() => {
+      store.set("/other", 1);
+    });
+    expect(renders).toBe(1);
+
+    // Derived value flips (false → true): re-render
+    act(() => {
+      store.set("/editKey", "Main");
+    });
+    expect(renders).toBe(2);
+    expect(container.textContent).toBe("yes");
+
+    // Flips back (true → false): re-render
+    act(() => {
+      store.set("/editKey", "Other");
+    });
+    expect(renders).toBe(3);
+    expect(container.textContent).toBe("no");
+  });
+
+  it("re-renders when a second path change alters the derived value", () => {
+    const store = createStore({ a: 1, b: 0 });
+    let renders = 0;
+    function Sum() {
+      renders++;
+      const sum = useSelector((s) => getByPath(s, "/a") + getByPath(s, "/b"));
+      return <div>{sum}</div>;
+    }
+    const { container } = render(<Sum />, { wrapper: createWrapper({ store }) });
+    expect(renders).toBe(1);
+    expect(container.textContent).toBe("1");
+
+    // Sum 1 → 2, driven by /b (not the first path read)
+    act(() => {
+      store.set("/b", 1);
+    });
+    expect(renders).toBe(2);
+    expect(container.textContent).toBe("2");
+  });
+
+  it("works inside a repeat scope", () => {
+    const store = createStore({ editKey: "Main" });
+    const { result } = renderHook(
+      () => useSelector((s) => getByPath(s, "/editKey") === "Main"),
+      { wrapper: createWrapper({ store, repeatPath: "/items/3" }) },
+    );
+    expect(result.current).toBe(true);
+  });
+
+  it("throws when used outside a StoreProvider", () => {
+    expect(() => renderHook(() => useSelector(() => 1))).toThrow(
+      "useStore must be used within a StoreProvider",
+    );
   });
 });
 

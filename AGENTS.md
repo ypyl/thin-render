@@ -1,5 +1,33 @@
 # Agent Instructions
 
+## OpenSpec workflow (REQUIRED for code changes)
+
+All code changes to this library MUST go through the OpenSpec change workflow. Do not edit `src/`, `demo/`, tests, or the public API directly without a change proposal.
+
+**Workflow:**
+
+1. **Propose** — create a change with all artifacts in one step:
+   - `/opsx-propose <name-or-description>` (or the `openspec-propose` skill)
+   - Generates `openspec/changes/<name>/` with `proposal.md`, `specs/**/spec.md`, `design.md`, `tasks.md`
+   - Validate with `openspec validate --changes <name>` before starting work
+2. **Apply** — implement the tasks:
+   - `/opsx-apply <name>` (or the `openspec-apply-change` skill)
+   - Mark each task `- [x]` in `tasks.md` as it completes
+   - Every task list MUST include running `npm test` and `npm run coverage` (100% thresholds enforced)
+3. **Archive** — finalize when implementation is complete:
+   - `/opsx-archive <name>` (or the `openspec-archive-change` skill)
+   - Moves the change to `openspec/changes/archive/` and merges specs into `openspec/specs/`
+
+**Rules:**
+
+- Use `openspec status --change <name>` and `openspec instructions <artifact> --change <name>` before writing artifacts — the CLI owns the canonical paths and build order
+- Specs are behavior contracts: SHALL/MUST requirements, each with `#### Scenario:` blocks (WHEN/THEN). Implementation details belong in `design.md`, not specs
+- Check `openspec/specs/` for existing capabilities before filling the proposal's Capabilities section — reuse or modify, don't duplicate
+- Read dependency artifacts before creating the next one (proposal → specs/design → tasks)
+- Any change that touches documented behavior must also update `README.md` and `LLM.md` per the sections below
+
+**Exceptions:** trivial fixes (typos, formatting, docs-only edits) can skip the full proposal, but still update docs in sync and mention the change.
+
 ## READMEs
 
 When making changes that affect documented behavior, keep any affected README files in sync:

@@ -40,13 +40,14 @@ import type { Spec, UIElement, ActionBinding, RepeatConfig, ComponentProps, Hand
 ### Hooks
 
 ```ts
-import { useBound, useValue, useSetValue, useStore, usePath } from "thin-render";
+import { useBound, useValue, useSetValue, useStore, usePath, useSelector, getByPath } from "thin-render";
 ```
 
 | Hook | Returns | Notes |
 |------|---------|-------|
 | `useBound<T>(path)` | `[T \| undefined, (v: T) => void]` | Two-way bind; subscribes |
 | `useValue<T>(path)` | `T \| undefined` | Read-only subscription |
+| `useSelector<T>(sel: (s: unknown) => T)` | `T` | Derived subscription; re-renders only when the selected value changes |
 | `useSetValue(path)` | `(v: unknown) => void` | Write-only |
 | `useStore()` | `Store` | Access `store.get()` / `store.set()` |
 | `usePath()` | `string` | Current repeat scope base path |
@@ -191,7 +192,20 @@ function Switch({ element, children }: ComponentProps) {
 
 Use special child keys: `{ "key": ".$loading" }` — the component strips the `.$` prefix for matching.
 
-### 6. Modal (store-gated overlay)
+### 6. Derived Subscription (useSelector)
+
+```tsx
+import { useSelector, getByPath } from "thin-render";
+
+function EditModeGate() {
+  const isMain = useSelector((s) => getByPath(s, "/editKey") === "Main");
+  return isMain ? <MainEditor /> : <ReadOnly />;
+}
+```
+
+Re-renders ONLY when the selected value changes (strict equality) — writes to `/editKey` that keep the result the same (e.g. `"Other1"` → `"Other2"`) do not re-render, unlike `useValue` which re-renders on every write to its path. The subscription is whole-store (coarse) with React bailing out on equal snapshots — for hot paths prefer composing narrow `useValue` calls. The selector must return a stable reference when unchanged: primitives are safe; memoize object/array results.
+
+### 7. Modal (store-gated overlay)
 
 ```json
 { "type": "Modal", "props": { "path": "/detailData", "title": "Details" }, "children": ["body"] }

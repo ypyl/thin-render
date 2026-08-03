@@ -82,6 +82,40 @@ export function useBound<T>(path: string): [T | undefined, (value: T) => void] {
   return [value, set];
 }
 
+/**
+ * Subscribe to a value derived from the store.
+ *
+ * Re-renders ONLY when the selector's result changes (Object.is), regardless
+ * of how many store paths changed underneath. Unlike `useValue`, which
+ * subscribes to one path and re-renders on every write to it, the snapshot
+ * here is the computed value itself — so writes that don't change the result
+ * do not re-render the component.
+ *
+ * Example: re-render only when `/editKey` becomes (or stops being) "Main":
+ *
+ *   const isMain = useSelector((s) => getByPath(s, "/editKey") === "Main");
+ *
+ * Caveats:
+ * - The selector must return a stable reference when the derived value is
+ *   unchanged (a primitive, or a memoized object/array). A fresh literal each
+ *   call violates useSyncExternalStore's snapshot contract and can loop.
+ * - The subscription is coarse: it listens to the whole store, so the component
+ *   is notified on every set() and React bails out when the snapshot is equal.
+ *   For hot paths prefer composing narrow `useValue` calls instead.
+ */
+export function useSelector<T>(selector: (state: unknown) => T): T {
+  const store = useStore();
+  const subscribe = useCallback(
+    (listener: () => void) => store.subscribe("", listener),
+    [store],
+  );
+  const getSnapshot = useCallback(
+    () => selector(store.getState()),
+    [store, selector],
+  );
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot) as T;
+}
+
 /** Resolve `{ $state: "<path>" }` references in action params at dispatch time. Recurses into nested objects.
  * Also resolves `{ $item: "<field>" }` to `${basePath}/${field}` and `{ $index: boolean }` to the numeric index. */
 export function resolveParams(

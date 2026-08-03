@@ -8,7 +8,7 @@ export {
   type Handler,
   type Handlers,
 } from "./contexts";
-export { useStore, useValue, useSetValue, useBound, usePath } from "./hooks";
+export { useStore, useValue, useSetValue, useBound, useSelector, usePath } from "./hooks";
 export {
   Renderer,
   type ComponentProps,
