@@ -1,6 +1,6 @@
 # thin-render
 
-A ~750-line spec-driven renderer with **granular per-path re-renders** for React components and a zero-dependency generic renderer for non-React targets (DOCX, PDF, CSV, etc.). Edit one cell in a 1000-row table — only that one cell's component re-renders.
+A ~1,050-line spec-driven renderer with **granular per-path re-renders** for React components and a zero-dependency generic renderer for non-React targets (DOCX, PDF, CSV, etc.). Edit one cell in a 1000-row table — only that one cell's component re-renders.
 
 Built as a minimal alternative to `@json-render/react`, dropping AI streaming, Zod validation, directives, devtools, and multi-framework output. Just the rendering core, a path-based store, an action system, and a generic renderer for non-React output.
 
@@ -266,7 +266,7 @@ interface ActionBinding {
 
 ## Demo
 
-The demo app (`demo/`) has thirteen self-contained cases:
+The demo app (`demo/`) has fifteen self-contained cases:
 
 | Case | What it shows | Source |
 |-----|---------------|--------|
@@ -282,6 +282,9 @@ The demo app (`demo/`) has thirteen self-contained cases:
 | **Translations** | Editable translation strings via repeat on a plain object — demonstrates object key iteration with PathLabel and BoundField | [`TranslationsCase.tsx`](./demo/src/cases/translations/TranslationsCase.tsx) · [`buildSpec.ts`](./demo/src/cases/translations/buildSpec.ts) · [`registry.ts`](./demo/src/cases/translations/registry.ts) |
 | **Drag & Drop** | Sortable table with drag-and-drop reordering, add, and remove — powered by @dnd-kit with the store as source of truth | [`DndTableCase.tsx`](./demo/src/cases/dnd-table/DndTableCase.tsx) · [`buildSpec.ts`](./demo/src/cases/dnd-table/buildSpec.ts) · [`registry.ts`](./demo/src/cases/dnd-table/registry.ts) |
 | **Mantine Table** | Mantine-styled table with pagination — 300 rows, 10 per page, page state in store. Self-contained PaginatedTable component | [`MantineTableCase.tsx`](./demo/src/cases/mantine-table/MantineTableCase.tsx) · [`buildSpec.ts`](./demo/src/cases/mantine-table/buildSpec.ts) · [`handlers.ts`](./demo/src/cases/mantine-table/handlers.ts) · [`registry.ts`](./demo/src/cases/mantine-table/registry.ts) |
+| **Nested Repeat** | Two-level nested `repeat` — categories contain items; the inner repeat uses `{ $item: "items" }` to resolve against the outer scope | [`NestedRepeatCase.tsx`](./demo/src/cases/nested-repeat/NestedRepeatCase.tsx) · [`spec.json`](./demo/src/cases/nested-repeat/spec.json) · [`registry.tsx`](./demo/src/cases/nested-repeat/registry.tsx) |
+| **DOCX Export** | Edit data in a table, then export to a downloadable `.docx` — `renderGeneric` with separate React and DOCX specs and registry-side expression resolution | [`DocxExportCase.tsx`](./demo/src/cases/docx-export/DocxExportCase.tsx) · [`spec.json`](./demo/src/cases/docx-export/spec.json) · [`docxSpec.ts`](./demo/src/cases/docx-export/docxSpec.ts) · [`docxRegistry.ts`](./demo/src/cases/docx-export/docxRegistry.ts) · [`registry.ts`](./demo/src/cases/docx-export/registry.ts) |
+| **XLSX Export** | Edit data in a table, then export to a downloadable `.xlsx` via `renderGeneric` with the `xlsx` (SheetJS) package | [`XlsxExportCase.tsx`](./demo/src/cases/xlsx-export/XlsxExportCase.tsx) · [`spec.json`](./demo/src/cases/xlsx-export/spec.json) · [`xlsxSpec.ts`](./demo/src/cases/xlsx-export/xlsxSpec.ts) · [`xlsxRegistry.ts`](./demo/src/cases/xlsx-export/xlsxRegistry.ts) · [`registry.ts`](./demo/src/cases/xlsx-export/registry.ts) |
 
 ## Q&A
 
