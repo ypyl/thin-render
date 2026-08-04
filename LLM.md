@@ -47,7 +47,7 @@ import { useBound, useValue, useSetValue, useStore, usePath, useSelector, getByP
 |------|---------|-------|
 | `useBound<T>(path)` | `[T \| undefined, (v: T) => void]` | Two-way bind; subscribes |
 | `useValue<T>(path)` | `T \| undefined` | Read-only subscription |
-| `useSelector<T>(sel: (s: unknown) => T)` | `T` | Derived subscription; re-renders only when the selected value changes |
+| `useSelector<T>(path, derive)` | `T` | Derived subscription within a path window; re-renders only when the derived value changes |
 | `useSetValue(path)` | `(v: unknown) => void` | Write-only |
 | `useStore()` | `Store` | Access `store.get()` / `store.set()` |
 | `usePath()` | `string` | Current repeat scope base path |
@@ -195,15 +195,17 @@ Use special child keys: `{ "key": ".$loading" }` — the component strips the `.
 ### 6. Derived Subscription (useSelector)
 
 ```tsx
-import { useSelector, getByPath } from "thin-render";
+import { useSelector } from "thin-render";
 
 function EditModeGate() {
-  const isMain = useSelector((s) => getByPath(s, "/editKey") === "Main");
+  const isMain = useSelector("/editKey", (v) => v === "Main");
   return isMain ? <MainEditor /> : <ReadOnly />;
 }
 ```
 
-Re-renders ONLY when the selected value changes (strict equality) — writes to `/editKey` that keep the result the same (e.g. `"Other1"` → `"Other2"`) do not re-render, unlike `useValue` which re-renders on every write to its path. The subscription is whole-store (coarse) with React bailing out on equal snapshots — for hot paths prefer composing narrow `useValue` calls. The selector must return a stable reference when unchanged: primitives are safe; memoize object/array results.
+`path` is the subscription **window**: the component is notified only on writes that overlap it (the path or any descendant), and `derive` receives the value at that path — plain property access, no `getByPath` needed. Re-renders ONLY when the derived value changes (strict equality) — writes to `/editKey` that keep the result the same (e.g. `"Other1"` → `"Other2"`) do not re-render, unlike `useValue` which re-renders on every write to its path. The derive must return a stable reference when unchanged: primitives are safe; memoize object/array results.
+
+Window guidance: choose the tightest path that covers every read. Same-subtree multi-field derives use one call (`useSelector("/user", (u) => u.name === "Main" && u.role === "admin")`); unrelated branches use the root window (`useSelector("", (s) => s.items.length > 0 && s.selectedId != null)`) or compose narrow calls (`useSelector("/items", ...)` + `useSelector("/selectedId", ...)`) and combine in render.
 
 ### 7. Modal (store-gated overlay)
 

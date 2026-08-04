@@ -37,7 +37,7 @@ Built as a minimal alternative to `@json-render/react`, dropping AI streaming, Z
 - **StoreContext** holds the store *reference* — never the state value. It never changes, so `useContext` never triggers re-renders.
 - **ActionContext** holds handler map + `getState`/`setState` — also stable. Dispatching an action never re-renders anything by itself.
 - **ElementRenderer** is `React.memo`'d and subscribes to no state. It only re-renders when the spec changes.
-- **Leaf components** subscribe to individual paths via `useBound()`/`useValue()` — each uses `useSyncExternalStore` with a per-path snapshot. Changing `/items/0/name` re-renders only the component subscribed to that exact path. Derived values use `useSelector()` — re-renders only when the selected value changes.
+- **Leaf components** subscribe to individual paths via `useBound()`/`useValue()` — each uses `useSyncExternalStore` with a per-path snapshot. Changing `/items/0/name` re-renders only the component subscribed to that exact path. Derived values use `useSelector(path, derive)` — the path is the subscription window (writes outside it never notify), and it re-renders only when the derived value changes.
 
 ## Quick start
 
@@ -161,8 +161,9 @@ For stable React keys across re-renders, provide a `key` field on the repeat con
 |------|-----------|-------------|
 | `useBound<T>(path)` | `[T \| undefined, (v: T) => void]` | Two-way bind to a path |
 | `useValue<T>(path)` | `T \| undefined` | Read-only subscription to a path |
-| `useSelector<T>(sel: (s: unknown) => T)` | `T` | Subscribe to a **derived** value; re-renders only when the selected value changes |
+| `useSelector<T>(path, derive)` | `T` | Subscribe to a **derived** value within a path window; re-renders only when the derived value changes |
 | `useSetValue(path)` | `(v: unknown) => void` | Write-only setter for a path |
+| `useStore()` | `Store` | The stable store; throws without a provider |
 | `usePath()` | `string` | Current repeat scope's base path |
 
 ### Store & utilities

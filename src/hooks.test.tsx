@@ -2,7 +2,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { renderHook, act, render } from "@testing-library/react";
 import { useStore, useValue, useSetValue, useBound, useSelector, useEmit, useItemPath, useResolvedPath, usePath, useRepeatIndex } from "./hooks";
-import { createStore, getByPath } from "./store";
+import { createStore } from "./store";
 import { createWrapper } from "./test-utils";
 import { StoreProvider, ActionProvider } from "./contexts";
 
@@ -119,45 +119,119 @@ describe("useBound", () => {
 // ── useSelector ───────────────────────────────────────────────────
 
 describe("useSelector", () => {
-  it("returns a derived value from the store", () => {
+  it("returns a derived value from one path", () => {
     const store = createStore({ editKey: "Main" });
     const { result } = renderHook(
-      () => useSelector((s) => getByPath(s, "/editKey") === "Main"),
+      () => useSelector("/editKey", (v) => v === "Main"),
       { wrapper: createWrapper({ store }) },
     );
     expect(result.current).toBe(true);
   });
 
-  it("derives values across multiple paths", () => {
+  it("derives via property access on the resolved subtree", () => {
+    const store = createStore({ user: { name: "A", role: "admin" } });
+    const { result } = renderHook(
+      () => useSelector("/user", (u) => (u as { name: string }).name),
+      { wrapper: createWrapper({ store }) },
+    );
+    expect(result.current).toBe("A");
+  });
+
+  it("root window receives the full live snapshot", () => {
     const store = createStore({ a: 1, b: 2 });
     const { result } = renderHook(
-      () => useSelector((s) => getByPath(s, "/a") + getByPath(s, "/b")),
+      () => {
+        const sum = useSelector("", (s) => {
+          const st = s as { a: number; b: number };
+          return st.a + st.b;
+        });
+        return sum;
+      },
       { wrapper: createWrapper({ store }) },
     );
     expect(result.current).toBe(3);
   });
 
-  it("re-renders only when the selected value changes", () => {
+  it("notifies only on writes within the window", () => {
+    const store = createStore({ user: { name: "A" }, items: [] });
+    let evaluations = 0;
+    function UserGate() {
+      const isMain = useSelector("/user", (u) => {
+        evaluations++;
+        return (u as { name: string }).name === "Main";
+      });
+      return <div>{isMain ? "yes" : "no"}</div>;
+    }
+    const { container } = render(<UserGate />, {
+      wrapper: createWrapper({ store }),
+    });
+
+    // Outside the window: not notified, derive not re-evaluated
+    const evalsBefore = evaluations;
+    act(() => {
+      store.set("/items", [1]);
+    });
+    expect(evaluations).toBe(evalsBefore);
+    expect(container.textContent).toBe("no");
+
+    // Inside the window: notified, derive re-evaluated (value unchanged → no render)
+    act(() => {
+      store.set("/user/name", "B");
+    });
+    expect(evaluations).toBeGreaterThan(evalsBefore);
+    expect(container.textContent).toBe("no");
+
+    // Flip: re-render
+    act(() => {
+      store.set("/user/name", "Main");
+    });
+    expect(container.textContent).toBe("yes");
+  });
+
+  it("root window notifies on any write", () => {
+    const store = createStore({ editKey: "A" });
+    let renders = 0;
+    let evaluations = 0;
+    function IsMain() {
+      renders++;
+      const isMain = useSelector("", (s) => {
+        evaluations++;
+        return (s as { editKey: string }).editKey === "Main";
+      });
+      return <div>{isMain ? "yes" : "no"}</div>;
+    }
+    const { container } = render(<IsMain />, {
+      wrapper: createWrapper({ store }),
+    });
+    const rendersBefore = renders;
+    const evalsBefore = evaluations;
+
+    // Notified on an unrelated write: derive re-evaluated, value unchanged → no re-render
+    act(() => {
+      store.set("/other", 1);
+    });
+    expect(evaluations).toBeGreaterThan(evalsBefore);
+    expect(renders).toBe(rendersBefore);
+    expect(container.textContent).toBe("no");
+  });
+
+  it("re-renders only when the derived value changes", () => {
     const store = createStore({ editKey: "A" });
     let renders = 0;
     function IsMain() {
       renders++;
-      const isMain = useSelector((s) => getByPath(s, "/editKey") === "Main");
+      const isMain = useSelector("/editKey", (v) => v === "Main");
       return <div>{isMain ? "yes" : "no"}</div>;
     }
-    const { container } = render(<IsMain />, { wrapper: createWrapper({ store }) });
+    const { container } = render(<IsMain />, {
+      wrapper: createWrapper({ store }),
+    });
     expect(renders).toBe(1);
     expect(container.textContent).toBe("no");
 
     // Derived value unchanged (false → false): no re-render
     act(() => {
       store.set("/editKey", "B");
-    });
-    expect(renders).toBe(1);
-
-    // Unrelated path write: no re-render
-    act(() => {
-      store.set("/other", 1);
     });
     expect(renders).toBe(1);
 
@@ -176,37 +250,49 @@ describe("useSelector", () => {
     expect(container.textContent).toBe("no");
   });
 
-  it("re-renders when a second path change alters the derived value", () => {
-    const store = createStore({ a: 1, b: 0 });
+  it("re-renders when a same-subtree multi-field derive changes", () => {
+    const store = createStore({ user: { name: "A", role: "user" } });
     let renders = 0;
-    function Sum() {
+    function AdminGate() {
       renders++;
-      const sum = useSelector((s) => getByPath(s, "/a") + getByPath(s, "/b"));
-      return <div>{sum}</div>;
+      const isAdmin = useSelector("/user", (u) => {
+        const { name, role } = u as { name: string; role: string };
+        return name === "Main" && role === "admin";
+      });
+      return <div>{isAdmin ? "yes" : "no"}</div>;
     }
-    const { container } = render(<Sum />, { wrapper: createWrapper({ store }) });
+    const { container } = render(<AdminGate />, {
+      wrapper: createWrapper({ store }),
+    });
     expect(renders).toBe(1);
-    expect(container.textContent).toBe("1");
+    expect(container.textContent).toBe("no");
 
-    // Sum 1 → 2, driven by /b (not the first path read)
+    // One field changes but the combined result stays false: no re-render
     act(() => {
-      store.set("/b", 1);
+      store.set("/user/name", "Main");
+    });
+    expect(renders).toBe(1);
+    expect(container.textContent).toBe("no");
+
+    // Second field change flips the combined result: re-render
+    act(() => {
+      store.set("/user/role", "admin");
     });
     expect(renders).toBe(2);
-    expect(container.textContent).toBe("2");
+    expect(container.textContent).toBe("yes");
   });
 
   it("works inside a repeat scope", () => {
     const store = createStore({ editKey: "Main" });
     const { result } = renderHook(
-      () => useSelector((s) => getByPath(s, "/editKey") === "Main"),
+      () => useSelector("/editKey", (v) => v === "Main"),
       { wrapper: createWrapper({ store, repeatPath: "/items/3" }) },
     );
     expect(result.current).toBe(true);
   });
 
   it("throws when used outside a StoreProvider", () => {
-    expect(() => renderHook(() => useSelector(() => 1))).toThrow(
+    expect(() => renderHook(() => useSelector("/x", () => 1))).toThrow(
       "useStore must be used within a StoreProvider",
     );
   });

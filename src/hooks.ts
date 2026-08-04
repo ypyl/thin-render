@@ -83,35 +83,42 @@ export function useBound<T>(path: string): [T | undefined, (value: T) => void] {
 }
 
 /**
- * Subscribe to a value derived from the store.
+ * Subscribe to a value derived from a store path.
  *
- * Re-renders ONLY when the selector's result changes (Object.is), regardless
- * of how many store paths changed underneath. Unlike `useValue`, which
- * subscribes to one path and re-renders on every write to it, the snapshot
- * here is the computed value itself — so writes that don't change the result
- * do not re-render the component.
+ * `path` is the subscription **window**: the component is notified only on
+ * writes that overlap the path (the path itself or any descendant), and the
+ * derive receives the value at that path — so it can only read within the
+ * window. Passing `""` widens the window to the whole store (derive receives
+ * the entire state and every write notifies). Re-renders ONLY when the
+ * derive's result changes (Object.is), regardless of how many writes occurred
+ * inside the window.
  *
  * Example: re-render only when `/editKey` becomes (or stops being) "Main":
  *
- *   const isMain = useSelector((s) => getByPath(s, "/editKey") === "Main");
+ *   const isMain = useSelector("/editKey", (v) => v === "Main");
+ *
+ * The derive reads the resolved subtree directly (property access — no
+ * `getByPath` needed). Multi-branch derives: use the root window `""` for
+ * unrelated branches, or compose narrow calls (`useSelector("/items", ...)`
+ * + `useSelector("/selectedId", ...)`) and combine in render.
  *
  * Caveats:
- * - The selector must return a stable reference when the derived value is
+ * - The derive must return a stable reference when the derived value is
  *   unchanged (a primitive, or a memoized object/array). A fresh literal each
  *   call violates useSyncExternalStore's snapshot contract and can loop.
- * - The subscription is coarse: it listens to the whole store, so the component
- *   is notified on every set() and React bails out when the snapshot is equal.
- *   For hot paths prefer composing narrow `useValue` calls instead.
+ * - Writes inside the window that don't change the derived value still notify
+ *   the component (React bails out on equal snapshots). Choose the tightest
+ *   window that covers every read.
  */
-export function useSelector<T>(selector: (state: unknown) => T): T {
+export function useSelector<T>(path: string, derive: (value: unknown) => T): T {
   const store = useStore();
   const subscribe = useCallback(
-    (listener: () => void) => store.subscribe("", listener),
-    [store],
+    (listener: () => void) => store.subscribe(path, listener),
+    [store, path],
   );
   const getSnapshot = useCallback(
-    () => selector(store.getState()),
-    [store, selector],
+    () => derive(getByPath(store.getState(), path)),
+    [store, path, derive],
   );
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot) as T;
 }
