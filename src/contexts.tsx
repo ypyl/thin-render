@@ -6,7 +6,7 @@
 // re-renders come from per-path `useValue` subscriptions. See design.md
 // Decisions 2 and 4.
 import { createContext, useMemo, type ReactNode } from "react";
-import type { Store } from "./store";
+import type { Store } from "./store.js";
 
 /** Carries the stable store reference. Never holds state directly. */
 export const StoreContext = createContext<Store | null>(null);

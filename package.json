@@ -1,6 +1,6 @@
 {
   "name": "thin-render",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Minimal spec-driven React UI renderer with granular per-path subscriptions.",
   "type": "module",
   "main": "./dist/index.js",
@@ -21,7 +21,7 @@
     "build": "tsc -p tsconfig.build.json",
     "test": "vitest run",
     "coverage": "vitest run --coverage",
-    "prepublishOnly": "npm test"
+    "prepublishOnly": "npm test && npm run build && node --input-type=module -e \"import('./dist/index.js')\""
   },
   "repository": {
     "type": "git",

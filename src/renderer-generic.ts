@@ -4,9 +4,9 @@
 // element props and a context object containing the store, base path, and
 // index. Registry functions resolve expressions themselves — just like
 // React components use hooks to resolve. No subscriptions, no JSX.
-import type { Spec } from "./spec";
-import type { Store } from "./store";
-import { resolveRepeatPath } from "./expressions";
+import type { Spec } from "./spec.js";
+import type { Store } from "./store.js";
+import { resolveRepeatPath } from "./expressions.js";
 
 /** Context passed to each registry function. */
 export type RenderContext = {

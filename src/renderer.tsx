@@ -12,11 +12,11 @@ import {
   memo,
   createElement,
 } from "react";
-import type { Spec, UIElement, OnMap, RepeatConfig } from "./spec";
-import { useValue, useEmit, useResolvedPath, PathContext, RepeatIndexContext } from "./hooks";
-import { StoreProvider, ActionProvider, BUILTIN_SET_STATE } from "./contexts";
-import type { Store } from "./store";
-import type { Handlers } from "./contexts";
+import type { Spec, UIElement, OnMap, RepeatConfig } from "./spec.js";
+import { useValue, useEmit, useResolvedPath, PathContext, RepeatIndexContext } from "./hooks.js";
+import { StoreProvider, ActionProvider, BUILTIN_SET_STATE } from "./contexts.js";
+import type { Store } from "./store.js";
+import type { Handlers } from "./contexts.js";
 
 // ── Component contract ────────────────────────────────────────────
 

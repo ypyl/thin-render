@@ -15,10 +15,10 @@ import {
   StoreContext,
   ActionContext,
   type ActionContextValue,
-} from "./contexts";
-import type { OnMap, ActionBinding } from "./spec";
-import { getByPath } from "./store";
-import { resolveExpressions, resolveRepeatPath } from "./expressions";
+} from "./contexts.js";
+import type { OnMap, ActionBinding } from "./spec.js";
+import { getByPath } from "./store.js";
+import { resolveExpressions, resolveRepeatPath } from "./expressions.js";
 
 // ── Repeat scope contexts (used by renderer + hooks) ──────────────
 

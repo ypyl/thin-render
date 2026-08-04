@@ -2,7 +2,7 @@
 //
 // Shared internally by the React renderer (via hooks.ts) and the generic
 // renderer (renderer-generic.ts). Not exported as public API.
-import { getByPath } from "./store";
+import { getByPath } from "./store.js";
 
 /**
  * Recursively resolve `$state`, `$item`, and `$index` expression objects in a
