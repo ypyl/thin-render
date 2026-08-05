@@ -76,6 +76,12 @@ const CASES = [
     description: "Mantine-styled table with pagination — 300 rows, 10 per page. Pagination state lives in the store.",
   },
   {
+    route: "/dynamic-columns",
+    emoji: "🧬",
+    title: "Dynamic Columns",
+    description: "Static spec, runtime-unknown columns — rows and cells repeat independently, and each cell resolves its value across the two repeat scopes via usePath(1). Switching datasets changes the column set with no spec regeneration.",
+  },
+  {
     route: "/nested-repeat",
     emoji: "🪆",
     title: "Nested Repeat",

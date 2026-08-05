@@ -51,7 +51,7 @@ import { useBound, useValue, useSetValue, useStore, usePath, useSelector, getByP
 | `useSelector<T>(path, derive)` | `T` | Derived subscription within a path window; re-renders only when the derived value changes |
 | `useSetValue(path)` | `(v: unknown) => void` | Write-only |
 | `useStore()` | `Store` | Access `store.get()` / `store.set()` |
-| `usePath()` | `string` | Current repeat scope base path |
+| `usePath(offset?)` | `string` | Current repeat scope base path; `usePath(1)` reads the parent repeat's scope, `undefined` beyond the stack |
 
 ### Component Contract
 
@@ -250,6 +250,33 @@ function SlotCard({ slots }: ComponentProps) {
   return <Paper><Title>{slots?.title}</Title>{slots?.body}</Paper>;
 }
 ```
+
+### 9. Dynamic Columns Table (scope stack)
+
+Render `{ data: [{ head1: val1, ... }, ...] }` — records whose keys are only known at runtime — with a **fully static spec**: rows and cells each repeat independently, and a cell resolves its value across the two scopes. Derived columns live in the store:
+
+```ts
+store.set("/data", rows.map((r, i) => ({ __id: i, ...r }))); // union of keys, excludes "__id"
+store.set("/colDefs", deriveColumns(rows));                  // [{ key, label }, ...]
+```
+
+```json
+{ "type": "TBody", "repeat": { "path": "/data", "key": "__id" }, "children": ["tr"] },
+{ "type": "Tr", "repeat": { "path": "/colDefs" }, "children": ["cell"] },
+{ "type": "DataCell" }
+```
+
+```tsx
+function DataCell(_props: ComponentProps) {
+  const colBase = usePath();                              // /colDefs/2
+  const rowBase = usePath(1);                             // /data/5
+  const key = useValue<string>(`${colBase}/key`) ?? "";   // "head1"
+  const [value, setValue] = useBound<string>(`${rowBase}/${key}`);
+  return <td><input value={value} onChange={(e) => setValue(e.target.value)} /></td>;
+}
+```
+
+Repeat scopes form a stack (innermost first); `usePath(offset)` walks it — `0` is current, `1` is the parent repeat, beyond the stack is `undefined`. The nested `Renderer` boundary resets the stack, so no scope leaks across renderers. `$item`, relative binds, and `$index` still resolve against the innermost scope only. A `DataCell` re-renders only on writes to its own value path; changing `/colDefs` (a new column set) re-renders only the repeats, with no spec regeneration. `renderGeneric` builders get the same stack as `ctx.scopes`. If you cannot add a custom cell component, generate the spec from the columns instead — that remains a valid fallback.
 
 ### Minimal App
 

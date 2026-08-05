@@ -21,7 +21,7 @@ export function createWrapper(opts: WrapperOptions = {}) {
     let inner = children;
     if (opts.repeatPath !== undefined || opts.repeatIndex !== undefined) {
       inner = (
-        <PathContext.Provider value={opts.repeatPath ?? ""}>
+        <PathContext.Provider value={[opts.repeatPath ?? ""]}>
           <RepeatIndexContext.Provider value={opts.repeatIndex}>
             {inner}
           </RepeatIndexContext.Provider>

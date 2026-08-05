@@ -28,6 +28,7 @@ npm run dev    # starts at http://localhost:5173
 | **Translations** | Editable translation strings via `repeat` on a plain object (not an array). |
 | **Drag & Drop** | Sortable table with drag-and-drop reordering, add, remove, and edit/save/cancel. Powered by `@dnd-kit`. |
 | **Mantine Table** | Mantine-styled table with `<Table>` + `<Pagination>` — 300 rows, 10 per page. Pagination state driven by store. |
+| **Dynamic Columns** | Static spec, runtime-unknown columns — rows repeat `/data`, cells repeat `/colDefs`. `DataCell` reads its column key from its own scope and binds the value at the row scope via `usePath(1)`. Switching datasets changes the column set with no spec regeneration. |
 | **Nested Repeat** | Two-level nested `repeat` — categories contain items; the inner repeat resolves `{ $item: "items" }` against the outer scope. |
 | **Named Slots** | Record-form children map slot names to elements — a `Page` places header/sidebar/content/footer at different positions; `repeat` builds per-item slot instances. |
 | **DOCX Export** | Edit data in an interactive table, then export to a downloadable `.docx` via `renderGeneric` with separate React and DOCX specs. |

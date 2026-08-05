@@ -619,6 +619,172 @@ describe("Nested renderer path scope boundary", () => {
     // The nested Renderer should see ""
     expect(captured).toContain("");
   });
+
+  it("nested renderer exposes no ancestor scopes", () => {
+    const store = createStore({
+      items: [{ name: "A" }],
+    });
+    const Spy = makeSpy();
+
+    // Captures usePath(1) — must be undefined inside the nested renderer.
+    const captured: (string | undefined)[] = [];
+    function CaptureParent({ element, children }: ComponentProps) {
+      captured.push(usePath(1));
+      return createElement("div", { "data-testid": "capture-parent" }, children);
+    }
+
+    function RowWithNested({ element, children }: ComponentProps) {
+      const nestedSpec: Spec = {
+        root: "cap",
+        elements: {
+          cap: { type: "CaptureParent" },
+        },
+      };
+      return createElement(
+        "div",
+        { "data-testid": "row-with-nested" },
+        createElement(Renderer, { spec: nestedSpec, registry: { CaptureParent }, store }),
+      );
+    }
+
+    const outerSpec: Spec = {
+      root: "list",
+      elements: {
+        list: { type: "Spy", repeat: { path: "/items" }, children: ["row"] },
+        row: { type: "RowWithNested" },
+      },
+    };
+
+    const registry: Registry = { Spy, CaptureParent, RowWithNested };
+
+    render(<Renderer spec={outerSpec} registry={registry} store={store} />);
+
+    // The nested renderer resets the stack: no parent scope is visible.
+    expect(captured).toEqual([undefined]);
+  });
+});
+
+// ── Tests: Repeat scope stack ──────────────────────────────────────
+
+/** Component that captures usePath() and usePath(offset) values. */
+function makeStackCapture() {
+  const captured: (string | undefined)[][] = [];
+  function CaptureStack({ element, children }: ComponentProps) {
+    captured.push([usePath(), usePath(1), usePath(2)]);
+    return createElement("div", { "data-testid": "stack-capture" }, children);
+  }
+  return { Component: CaptureStack as typeof CaptureStack, captured };
+}
+
+describe("Repeat scope stack", () => {
+  it("nested repeat exposes parent scopes via usePath(offset)", () => {
+    const store = createStore({
+      items: [
+        { name: "A", subitems: [{ val: 1 }, { val: 2 }] },
+        { name: "B", subitems: [{ val: 3 }] },
+      ],
+    });
+    const { Component: CaptureStack, captured } = makeStackCapture();
+    const Spy = makeSpy();
+    const registry: Registry = { Spy, CaptureStack };
+    const spec: Spec = {
+      root: "list",
+      elements: {
+        list: { type: "Spy", repeat: { path: "/items" }, children: ["subList"] },
+        subList: { type: "Spy", repeat: { path: { $item: "subitems" } }, children: ["cell"] },
+        cell: { type: "CaptureStack" },
+      },
+    };
+
+    render(<Renderer spec={spec} registry={registry} store={store} />);
+
+    // Each inner cell sees its own scope, the row scope, then the root scope.
+    expect(captured).toEqual([
+      ["/items/0/subitems/0", "/items/0", ""],
+      ["/items/0/subitems/1", "/items/0", ""],
+      ["/items/1/subitems/0", "/items/1", ""],
+    ]);
+  });
+
+  it("grid cell resolves row and column scopes via $state columns repeat", () => {
+    const store = createStore({
+      data: [{ name: "A", email: "a@x.com" }, { name: "B", email: "b@x.com" }],
+      colPointer: "/colDefs",
+      colDefs: [{ key: "name" }, { key: "email" }],
+    });
+    const { Component: CaptureStack, captured } = makeStackCapture();
+    const Spy = makeSpy();
+    const registry: Registry = { Spy, CaptureStack };
+    const spec: Spec = {
+      root: "tbody",
+      elements: {
+        tbody: { type: "Spy", repeat: { path: "/data" }, children: ["tr"] },
+        tr: { type: "Spy", repeat: { path: { $state: "/colPointer" } }, children: ["cell"] },
+        cell: { type: "CaptureStack" },
+      },
+    };
+
+    render(<Renderer spec={spec} registry={registry} store={store} />);
+
+    // Rows × columns cross-product: each cell sees column scope + row scope.
+    expect(captured).toEqual([
+      ["/colDefs/0", "/data/0", ""],
+      ["/colDefs/1", "/data/0", ""],
+      ["/colDefs/0", "/data/1", ""],
+      ["/colDefs/1", "/data/1", ""],
+    ]);
+  });
+
+  it("three-level nesting exposes all ancestor scopes", () => {
+    const store = createStore({
+      a: [{ b: [{ c: [{ val: 1 }] }] }],
+    });
+    const { Component: CaptureStack, captured } = makeStackCapture();
+    const Spy = makeSpy();
+    const registry: Registry = { Spy, CaptureStack };
+    const spec: Spec = {
+      root: "l1",
+      elements: {
+        l1: { type: "Spy", repeat: { path: "/a" }, children: ["l2"] },
+        l2: { type: "Spy", repeat: { path: { $item: "b" } }, children: ["l3"] },
+        l3: { type: "Spy", repeat: { path: { $item: "c" } }, children: ["cell"] },
+        cell: { type: "CaptureStack" },
+      },
+    };
+
+    render(<Renderer spec={spec} registry={registry} store={store} />);
+
+    expect(captured).toEqual([
+      ["/a/0/b/0/c/0", "/a/0/b/0", "/a/0"],
+    ]);
+  });
+
+  it("relative bind composition inside a repeat uses only the innermost scope", () => {
+    const store = createStore({
+      items: [{ name: "A", subitems: [{ val: 1 }] }],
+    });
+    const rendered: unknown[] = [];
+    function Cell({ element, children }: ComponentProps) {
+      // Simulates consumer-side composition (BoundField pattern):
+      // relative reads compose against usePath() — the innermost scope.
+      rendered.push(useValue<string>(`${usePath()}/val`));
+      return createElement("div", {}, children);
+    }
+    const registry: Registry = { Cell };
+    const spec: Spec = {
+      root: "list",
+      elements: {
+        list: { type: "Cell", repeat: { path: "/items" }, children: ["subList"] },
+        subList: { type: "Cell", repeat: { path: { $item: "subitems" } }, children: ["cell"] },
+        cell: { type: "Cell" },
+      },
+    };
+
+    render(<Renderer spec={spec} registry={registry} store={store} />);
+
+    // The innermost repeat scope /items/0/subitems/0 wins — not /items/0.
+    expect(rendered).toEqual([undefined, undefined, 1]);
+  });
 });
 
 // ── Tests: Named slots (record-form children) ──────────────────────

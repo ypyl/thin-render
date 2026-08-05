@@ -13,6 +13,7 @@ import {
   type ComponentType,
   memo,
   createElement,
+  useContext,
 } from "react";
 import type { Spec, UIElement, OnMap, RepeatConfig, SlotMap } from "./spec.js";
 import { useValue, useEmit, useResolvedPath, PathContext, RepeatIndexContext } from "./hooks.js";
@@ -308,8 +309,11 @@ function RepeatSlotItem({
 // ── RepeatScope (lightweight contexts: base path + index) ─────────
 
 function RepeatScope({ path, index, children }: { path: string; index: string | number; children: ReactNode }) {
+  // Push this item's scope onto the parent stack (innermost first).
+  // Never mutate the context-held array — always a fresh copy.
+  const stack = useContext(PathContext);
   return (
-    <PathContext.Provider value={path}>
+    <PathContext.Provider value={[path, ...stack]}>
       <RepeatIndexContext.Provider value={index}>
         {children}
       </RepeatIndexContext.Provider>
@@ -344,7 +348,7 @@ export function Renderer({
   if (!spec.elements[spec.root]) return null;
 
   return (
-    <PathContext.Provider value="">
+    <PathContext.Provider value={[""]}>
       <RepeatIndexContext.Provider value={undefined}>
         <StoreProvider store={store}>
           <ActionProvider

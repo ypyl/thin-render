@@ -135,7 +135,7 @@ Built-in `setState` action is always available: `{ action: "setState", params: {
 { "type": "Card", "repeat": { "path": "/items" }, "children": ["row"] }
 ```
 
-Renders `row` once per item in `/items`. Inside a repeat, components can use `usePath()` to get the current item's base path (`/items/0`, `/items/1`, etc.) — which is automatically composed with relative paths like `useBound("name")` to read from `/items/0/name`.
+Renders `row` once per item in `/items`. Inside a repeat, components can use `usePath()` to get the current item's base path (`/items/0`, `/items/1`, etc.) — which is automatically composed with relative paths like `useBound("name")` to read from `/items/0/name`. Nested repeats push onto a scope stack: `usePath(1)` reads the *parent* repeat's base path, enabling rows × columns grids from a fully static spec (see the **Dynamic Columns** demo case) — `usePath(n)` returns `undefined` beyond the stack.
 
 For stable React keys across re-renders, provide a `key` field on the repeat config pointing to a unique field on each item (e.g., `"repeat": { "path": "/items", "key": "id" }`). Without it, the array index is used, which breaks on reorder or delete. The unique ID must come from your data — thin-render does not auto-generate IDs.
 
@@ -192,7 +192,7 @@ Exactly one of `children`/`slots` is passed to a component, based on the childre
 | `useSelector<T>(path, derive)` | `T` | Subscribe to a **derived** value within a path window; re-renders only when the derived value changes |
 | `useSetValue(path)` | `(v: unknown) => void` | Write-only setter for a path |
 | `useStore()` | `Store` | The stable store; throws without a provider |
-| `usePath()` | `string` | Current repeat scope's base path |
+| `usePath(offset?)` | `string` | Current repeat scope's base path; `usePath(1)` returns the parent scope, `undefined` beyond the stack |
 
 ### Store & utilities
 
@@ -298,7 +298,7 @@ interface ActionBinding {
 
 ## Demo
 
-The demo app (`demo/`) has sixteen self-contained cases:
+The demo app (`demo/`) has seventeen self-contained cases:
 
 | Case | What it shows | Source |
 |-----|---------------|--------|
@@ -314,6 +314,7 @@ The demo app (`demo/`) has sixteen self-contained cases:
 | **Translations** | Editable translation strings via repeat on a plain object — demonstrates object key iteration with PathLabel and BoundField | [`TranslationsCase.tsx`](./demo/src/cases/translations/TranslationsCase.tsx) · [`buildSpec.ts`](./demo/src/cases/translations/buildSpec.ts) · [`registry.ts`](./demo/src/cases/translations/registry.ts) |
 | **Drag & Drop** | Sortable table with drag-and-drop reordering, add, and remove — powered by @dnd-kit with the store as source of truth | [`DndTableCase.tsx`](./demo/src/cases/dnd-table/DndTableCase.tsx) · [`buildSpec.ts`](./demo/src/cases/dnd-table/buildSpec.ts) · [`registry.ts`](./demo/src/cases/dnd-table/registry.ts) |
 | **Mantine Table** | Mantine-styled table with pagination — 300 rows, 10 per page, page state in store. Self-contained PaginatedTable component | [`MantineTableCase.tsx`](./demo/src/cases/mantine-table/MantineTableCase.tsx) · [`buildSpec.ts`](./demo/src/cases/mantine-table/buildSpec.ts) · [`handlers.ts`](./demo/src/cases/mantine-table/handlers.ts) · [`registry.ts`](./demo/src/cases/mantine-table/registry.ts) |
+| **Dynamic Columns** | Static spec, runtime-unknown columns — rows repeat `/data`, cells repeat `/colDefs`; `DataCell` resolves each cell across the two repeat scopes via `usePath(1)`. Switching datasets changes the column set with no spec regeneration | [`DynamicColumnsCase.tsx`](./demo/src/cases/dynamic-columns/DynamicColumnsCase.tsx) · [`spec.json`](./demo/src/cases/dynamic-columns/spec.json) · [`handlers.ts`](./demo/src/cases/dynamic-columns/handlers.ts) · [`registry.tsx`](./demo/src/cases/dynamic-columns/registry.tsx) |
 | **Nested Repeat** | Two-level nested `repeat` — categories contain items; the inner repeat uses `{ $item: "items" }` to resolve against the outer scope | [`NestedRepeatCase.tsx`](./demo/src/cases/nested-repeat/NestedRepeatCase.tsx) · [`spec.json`](./demo/src/cases/nested-repeat/spec.json) · [`registry.tsx`](./demo/src/cases/nested-repeat/registry.tsx) |
 | **Named Slots** | Record-form children map slot names to elements — a `Page` places header/sidebar/content/footer at different positions; `repeat` builds per-item slot instances | [`NamedSlotsCase.tsx`](./demo/src/cases/named-slots/NamedSlotsCase.tsx) · [`spec.json`](./demo/src/cases/named-slots/spec.json) · [`registry.tsx`](./demo/src/cases/named-slots/registry.tsx) |
 | **DOCX Export** | Edit data in a table, then export to a downloadable `.docx` — `renderGeneric` with separate React and DOCX specs and registry-side expression resolution | [`DocxExportCase.tsx`](./demo/src/cases/docx-export/DocxExportCase.tsx) · [`spec.json`](./demo/src/cases/docx-export/spec.json) · [`docxSpec.ts`](./demo/src/cases/docx-export/docxSpec.ts) · [`docxRegistry.ts`](./demo/src/cases/docx-export/docxRegistry.ts) · [`registry.ts`](./demo/src/cases/docx-export/registry.ts) |

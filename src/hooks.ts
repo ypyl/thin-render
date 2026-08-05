@@ -22,12 +22,25 @@ import { resolveExpressions, resolveRepeatPath } from "./expressions.js";
 
 // ── Repeat scope contexts (used by renderer + hooks) ──────────────
 
-export const PathContext = createContext<string>("");
+// PathContext holds a STACK of repeat-scope base paths, innermost first
+// (e.g. ["/items/2/subitems/1", "/items/2"]). RepeatScope pushes; the
+// Renderer boundary resets to a fresh root stack [""]. `$item` resolution
+// and relative-path composition read only the innermost scope (stack[0]).
+export const PathContext = createContext<string[]>([""]);
 export const RepeatIndexContext = createContext<string | number | undefined>(undefined);
 
-/** Hook for descendant components to get parent repeat's base path. */
-export function usePath(): string {
-  return useContext(PathContext);
+/**
+ * Hook for descendant components to read repeat scopes.
+ *
+ * `usePath()` returns the innermost scope ("" at root) — unchanged behavior.
+ * `usePath(offset)` returns the scope at that depth: 1 = parent scope,
+ * 2 = grandparent, etc. Out-of-range offsets return `undefined`.
+ */
+export function usePath(): string;
+export function usePath(offset: number): string | undefined;
+export function usePath(offset = 0): string | undefined {
+  const stack = useContext(PathContext);
+  return stack[offset];
 }
 
 /** Hook for descendant components to get parent repeat's numeric index. */

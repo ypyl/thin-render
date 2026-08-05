@@ -130,6 +130,73 @@ describe("renderGeneric", () => {
     expect(indices).toEqual([0, 1, 2]);
   });
 
+  it("ctx.scopes is [\"\"] at root", () => {
+    const spec: Spec = {
+      root: "x",
+      elements: { x: { type: "T" } },
+    };
+    const registry: GenericRegistry = {
+      T: (_props, _children, ctx) => ctx.scopes,
+    };
+    expect(renderGeneric(spec, makeStore(), registry)).toEqual([""]);
+  });
+
+  it("ctx.scopes is innermost-first inside a nested repeat", () => {
+    const spec: Spec = {
+      root: "tbody",
+      elements: {
+        tbody: { type: "TBody", repeat: { path: "/data" }, children: ["tr"] },
+        tr: { type: "Tr", repeat: { path: { $state: "/colPointer" } }, children: ["cell"] },
+        cell: { type: "Cell" },
+      },
+    };
+    const store = makeStore({
+      data: [{ name: "A" }],
+      colPointer: "/colDefs",
+      colDefs: [{ key: "name" }, { key: "email" }],
+    });
+    const scopes: string[][] = [];
+    const registry: GenericRegistry = {
+      TBody: (_p, children) => children,
+      Tr: (_p, children) => children,
+      Cell: (_props, _children, ctx) => {
+        scopes.push(ctx.scopes);
+        return null;
+      },
+    };
+    renderGeneric(spec, store, registry);
+    // Rows × columns cross-product: each cell sees column scope + row scope + root.
+    expect(scopes).toEqual([
+      ["/colDefs/0", "/data/0", ""],
+      ["/colDefs/1", "/data/0", ""],
+    ]);
+  });
+
+  it("ctx.basePath stays the innermost scope when nested", () => {
+    const spec: Spec = {
+      root: "list",
+      elements: {
+        list: { type: "Wrapper", repeat: { path: "/rows" }, children: ["sub"] },
+        sub: { type: "Wrapper", repeat: { path: { $item: "cols" } }, children: ["cell"] },
+        cell: { type: "Cell" },
+      },
+    };
+    const store = makeStore({ rows: [{ cols: [{ v: 1 }, { v: 2 }] }] });
+    const seen: { basePath: string; scopes: string[] }[] = [];
+    const registry: GenericRegistry = {
+      Wrapper: (_p, children) => children,
+      Cell: (_props, _children, ctx) => {
+        seen.push({ basePath: ctx.basePath, scopes: ctx.scopes });
+        return null;
+      },
+    };
+    renderGeneric(spec, store, registry);
+    expect(seen).toEqual([
+      { basePath: "/rows/0/cols/0", scopes: ["/rows/0/cols/0", "/rows/0", ""] },
+      { basePath: "/rows/0/cols/1", scopes: ["/rows/0/cols/1", "/rows/0", ""] },
+    ]);
+  });
+
   it("registry can resolve $state manually via ctx.store", () => {
     const spec: Spec = {
       root: "x",

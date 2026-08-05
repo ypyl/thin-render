@@ -19,6 +19,8 @@ export type RenderContext = {
   store: Store;
   /** Current repeat scope base path ("" at root, "/items/0" inside a repeat). */
   basePath: string;
+  /** Full repeat scope stack, innermost first (e.g. ["/items/0/sub/2", "/items/0"]). */
+  scopes: string[];
   /** Numeric repeat index (undefined at root). */
   index?: string | number;
   /**
@@ -63,7 +65,7 @@ export function renderGeneric(
   if (!spec?.root) return null;
   if (!spec.elements[spec.root]) return null;
 
-  return walk(spec.root, spec, store, registry, "", undefined);
+  return walk(spec.root, spec, store, registry, [""], undefined);
 }
 
 /** Walk one slot's child keys (single id or array of ids) in order. */
@@ -72,25 +74,25 @@ function walkSlotKeys(
   spec: Spec,
   store: Store,
   registry: GenericRegistry,
-  basePath: string,
+  scopes: [string, ...string[]],
   index: string | number | undefined,
 ): unknown[] {
   return (Array.isArray(keys) ? keys : [keys]).map((childKey) =>
-    walk(childKey, spec, store, registry, basePath, index),
+    walk(childKey, spec, store, registry, scopes, index),
   );
 }
 
-/** Internal recursive walk. */
+/** Internal recursive walk. `scopes` is the repeat scope stack, innermost first — never empty (root is [""]). */
 function walk(
   elementKey: string,
   spec: Spec,
   store: Store,
   registry: GenericRegistry,
-  basePath: string,
+  scopes: [string, ...string[]],
   index: string | number | undefined,
 ): unknown {
   const element = spec.elements[elementKey];
-
+  const basePath = scopes[0];
   if (!element) {
     console.warn(
       `thin-render: missing element "${elementKey}" referenced in spec.`,
@@ -108,7 +110,7 @@ function walk(
 
   // Props are passed RAW — expressions NOT resolved by renderer
   const props = element.props ?? {};
-  const ctx: RenderContext = { store, basePath, index };
+  const ctx: RenderContext = { store, basePath, index, scopes };
 
   // Record-form children (SlotMap): results go into ctx.slots, children = [].
   const arrayChildren = Array.isArray(element.children) ? element.children : undefined;
@@ -120,7 +122,7 @@ function walk(
     const resolvedPath = resolveRepeatPath(
       element.repeat.path,
       () => store.getState(),
-      basePath || undefined,
+      scopes[0] || undefined,
     );
     if (!resolvedPath) return [];
 
@@ -137,7 +139,7 @@ function walk(
         for (let i = 0; i < value.length; i++) {
           const itemPath = `${resolvedPath}/${i}`;
           for (const [slotName, slotKeys] of Object.entries(slotMap)) {
-            slots[slotName]!.push(...walkSlotKeys(slotKeys, spec, store, registry, itemPath, i));
+            slots[slotName]!.push(...walkSlotKeys(slotKeys, spec, store, registry, [itemPath, ...scopes], i));
           }
         }
       } else if (value !== null && typeof value === "object") {
@@ -145,7 +147,7 @@ function walk(
         for (const objKey of Object.keys(value as Record<string, unknown>)) {
           const itemPath = `${resolvedPath}/${objKey}`;
           for (const [slotName, slotKeys] of Object.entries(slotMap)) {
-            slots[slotName]!.push(...walkSlotKeys(slotKeys, spec, store, registry, itemPath, i));
+            slots[slotName]!.push(...walkSlotKeys(slotKeys, spec, store, registry, [itemPath, ...scopes], i));
           }
           i++;
         }
@@ -161,7 +163,7 @@ function walk(
         const itemPath = `${resolvedPath}/${i}`;
         for (const childKey of arrayChildren ?? []) {
           results.push(
-            walk(childKey, spec, store, registry, itemPath, i),
+            walk(childKey, spec, store, registry, [itemPath, ...scopes], i),
           );
         }
       }
@@ -176,7 +178,7 @@ function walk(
         const itemPath = `${resolvedPath}/${objKey}`;
         for (const childKey of arrayChildren ?? []) {
           results.push(
-            walk(childKey, spec, store, registry, itemPath, i),
+            walk(childKey, spec, store, registry, [itemPath, ...scopes], i),
           );
         }
         i++;
@@ -193,7 +195,7 @@ function walk(
     const slots = Object.fromEntries(
       Object.entries(slotMap).map(([slotName, slotKeys]) => [
         slotName,
-        walkSlotKeys(slotKeys, spec, store, registry, basePath, index),
+        walkSlotKeys(slotKeys, spec, store, registry, scopes, index),
       ]),
     );
     return builder(props, [], { ...ctx, slots });
@@ -203,7 +205,7 @@ function walk(
   const children: unknown[] = [];
   for (const childKey of arrayChildren ?? []) {
     children.push(
-      walk(childKey, spec, store, registry, basePath, index),
+      walk(childKey, spec, store, registry, scopes, index),
     );
   }
 

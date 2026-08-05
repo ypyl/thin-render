@@ -456,3 +456,54 @@ No error is thrown, no state is changed. This is a deliberate design choice — 
 The built-in `setState` action is an exception: if `setState` isn't found (which only happens if the user explicitly removes it), it's silently skipped without a warning.
 
 If your action isn't firing, check the browser console for these warnings — it's usually a typo in the action name or a missing handler registration.
+
+## Patterns
+
+### How do I render a table whose columns I don't know in advance?
+
+Data like `{ data: [{ head1: val1, head2: val2, ... }, ...] }` — an array of records whose keys are only known at runtime — can't name its columns in a static spec. Two approaches, from the simplest to the most granular:
+
+**1. Static spec with two nested repeats (scope stack).** Derive the columns when data lands and store both arrays:
+
+```ts
+// in the load handler
+const rows = await api.fetchRows();
+store.set("/data", rows.map((r, i) => ({ __id: i, ...r })));
+store.set("/colDefs", deriveColumns(rows)); // [{ key: "head1", label: "head1" }, ...]
+```
+
+`deriveColumns` takes the union of keys across ALL rows (a row may miss a key — that cell renders empty) and excludes internal fields like `__id`:
+
+```ts
+function deriveColumns(rows: Record<string, unknown>[]): { key: string; label: string }[] {
+  const keys = new Set<string>();
+  for (const row of rows) for (const k of Object.keys(row)) if (k !== "__id") keys.add(k);
+  return [...keys].map((key) => ({ key, label: key }));
+}
+```
+
+The spec stays fully static — the header row and every body row repeat over `/colDefs`, with no column names anywhere in it:
+
+```json
+{ "type": "TBody", "repeat": { "path": "/data", "key": "__id" }, "children": ["tr"] },
+{ "type": "Tr", "repeat": { "path": "/colDefs" }, "children": ["cell"] },
+{ "type": "DataCell" }
+```
+
+Each cell resolves its value across the two repeat scopes. Repeat scopes form a stack (innermost first): `usePath()` is the column scope, `usePath(1)` the row scope, `undefined` beyond the stack:
+
+```tsx
+function DataCell(_props: ComponentProps) {
+  const colBase = usePath();                              // e.g. /colDefs/2
+  const rowBase = usePath(1);                             // e.g. /data/5
+  const key = useValue<string>(`${colBase}/key`) ?? "";   // e.g. "head1"
+  const [value, setValue] = useBound<string>(`${rowBase}/${key}`); // /data/5/head1
+  return <td><input value={value} onChange={(e) => setValue(e.target.value)} /></td>;
+}
+```
+
+The cell subscribes to exactly its own value path, so per-cell granularity survives; a column-set change only re-renders the repeats, never the whole tree. `renderGeneric` builders get the same stack via `ctx.scopes`. The nested-`<Renderer>` boundary resets the stack, so no scope leaks across renderers.
+
+**2. Generate the spec from the data (spec as derived state).** If you can't add a custom cell component, generate one `Th`/`Td`/`BoundField` element per column after load and memoize the spec on the column set — see the demo's Dynamic Columns case README note. The spec changes (full re-render, the correct trigger) only when the column set changes.
+
+Either way the two shared rules hold: enrich rows with a stable `__id` for the repeat key, and derive columns as a union across all rows, excluding internal fields.

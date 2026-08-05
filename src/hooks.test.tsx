@@ -314,6 +314,34 @@ describe("usePath", () => {
     });
     expect(result.current).toBe("/items/3");
   });
+
+  it("offset 0 returns the innermost scope", () => {
+    const { result } = renderHook(() => usePath(0), {
+      wrapper: createWrapper({ repeatPath: "/items/3" }),
+    });
+    expect(result.current).toBe("/items/3");
+  });
+
+  it("offset 1 returns undefined when there is no parent scope", () => {
+    const { result } = renderHook(() => usePath(1), {
+      wrapper: createWrapper({ repeatPath: "/items/3" }),
+    });
+    expect(result.current).toBeUndefined();
+  });
+
+  it("negative offset returns undefined", () => {
+    const { result } = renderHook(() => usePath(-1), {
+      wrapper: createWrapper({ repeatPath: "/items/3" }),
+    });
+    expect(result.current).toBeUndefined();
+  });
+
+  it("any offset at root returns undefined", () => {
+    const { result } = renderHook(() => usePath(2), {
+      wrapper: createWrapper(),
+    });
+    expect(result.current).toBeUndefined();
+  });
 });
 
 describe("useRepeatIndex", () => {
