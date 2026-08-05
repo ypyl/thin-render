@@ -39,13 +39,23 @@ export interface RepeatConfig {
 }
 
 /**
+ * Named children: maps slot names to child element ids (or arrays of ids for
+ * multiple elements in one slot). The parent component renders each slot at a
+ * position of its choosing via `ComponentProps.slots`.
+ */
+export type SlotMap = Record<string, string | string[]>;
+
+/**
  * One element in the spec. `props` holds plain values and path strings only —
  * no runtime `$`-expression resolution is performed by the renderer.
+ * `children` is either an ordered array of child element ids or a `SlotMap`
+ * of named slots (mutually exclusive — a component receives either the
+ * `children` prop or the `slots` prop, never both).
  */
 export interface UIElement {
   type: string;
   props?: Record<string, unknown>;
-  children?: string[];
+  children?: string[] | SlotMap;
   on?: OnMap;
   repeat?: RepeatConfig;
 }

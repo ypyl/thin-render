@@ -82,6 +82,12 @@ const CASES = [
     description: "Two-level nested repeat — categories contain items, inner repeat uses { $item: 'items' } to resolve against the outer scope.",
   },
   {
+    route: "/named-slots",
+    emoji: "🧩",
+    title: "Named Slots",
+    description: "Record-form children map slot names to elements — a Page component renders header/sidebar/content/footer at different positions, and repeat builds per-item slot instances.",
+  },
+  {
     route: "/docx-export",
     emoji: "📄",
     title: "DOCX Export",

@@ -1,18 +1,11 @@
-// Switch.tsx — renders the child element whose key matches the value at props.path.
+// Switch.tsx — renders the slot whose name matches the value at props.path.
+// Uses named children (record-form children): each slot name is a store value
+// (e.g. "loading", "loaded", "error") and the matching slot renders.
 import { useValue } from "thin-render";
 import type { ComponentProps } from "thin-render";
-import { Children, type ReactElement } from "react";
 
-export function Switch({ element, children }: ComponentProps) {
+export function Switch({ element, slots }: ComponentProps) {
   const value = useValue<string>(String(element.props?.path ?? ""));
   if (value == null) return null;
-  const arr = Children.toArray(children) as ReactElement[];
-  // React's Children.toArray prefixes non-stringifiable keys with ".$"
-  const match = arr.find((c) => {
-    const rawKey = typeof c.key === "string" && c.key.startsWith(".$")
-      ? c.key.slice(2)
-      : c.key;
-    return rawKey === value;
-  });
-  return match ?? null;
+  return slots?.[value] ?? null;
 }

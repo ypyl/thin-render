@@ -139,6 +139,34 @@ Renders `row` once per item in `/items`. Inside a repeat, components can use `us
 
 For stable React keys across re-renders, provide a `key` field on the repeat config pointing to a unique field on each item (e.g., `"repeat": { "path": "/items", "key": "id" }`). Without it, the array index is used, which breaks on reorder or delete. The unique ID must come from your data — thin-render does not auto-generate IDs.
 
+### Named slots (record-form children)
+
+`children` also accepts a record form: slot names mapped to child element ids (or arrays of ids). The parent component renders each slot at a position of its choosing:
+
+```json
+{ "type": "Page", "children": {
+  "header": "pageTitle",
+  "sidebar": ["link1", "link2"],
+  "content": "mainText",
+  "footer": "pageFooter"
+} }
+```
+
+```tsx
+function Page({ slots }: ComponentProps) {
+  return (
+    <div>
+      <header>{slots?.header}</header>
+      <aside>{slots?.sidebar}</aside>
+      <main>{slots?.content}</main>
+      <footer>{slots?.footer}</footer>
+    </div>
+  );
+}
+```
+
+Exactly one of `children`/`slots` is passed to a component, based on the children shape: array form → `children`, record form → `slots`. With `repeat` + record form, one component instance is created **per item**, each with its own slots scoped to the item's path. Slot names are never used as React keys (element keys are); do not reference the same child element id from two slots of the same element.
+
 ## API
 
 ### `<Renderer>`
@@ -193,7 +221,7 @@ A pure function that walks a spec tree, resolves `$state`/`$item`/`$index` in pr
 | Export | Signature | Description |
 |--------|-----------|-------------|
 | `renderGeneric(spec, store, registry)` | `unknown` | Walk the spec, resolve expressions, call registry builders |
-| `GenericRegistry` | `Record<string, (props, children) => unknown>` | Map of spec type → builder function |
+| `GenericRegistry` | `Record<string, (props, children, ctx) => unknown>` | Map of spec type → builder function |
 
 ```ts
 import { renderGeneric, createStore, type Spec, type GenericRegistry } from "thin-render";
@@ -227,7 +255,7 @@ const doc = renderGeneric(spec, store, registry) as Document;
 const blob = await Packer.toBlob(doc);
 ```
 
-Registry functions receive resolved props (all `$state`/`$item`/`$index` already resolved to plain values) and rendered children as a flat array. The renderer handles repeat iteration, expression resolution, and tree walking — your registry just builds the output objects.
+Registry functions receive resolved props (all `$state`/`$item`/`$index` already resolved to plain values) and rendered children as a flat array. For record-form children (named slots), `children` is `[]` and `ctx.slots` holds one entry per slot name (each an array of that slot's rendered results). The renderer handles repeat iteration, expression resolution, and tree walking — your registry just builds the output objects.
 
 ### Component contract (`ComponentProps`)
 
@@ -236,7 +264,8 @@ Registry functions receive resolved props (all `$state`/`$item`/`$index` already
 ```ts
 interface ComponentProps {
   element: UIElement;          // current spec element
-  children?: ReactNode;       // rendered child elements
+  children?: ReactNode;       // rendered children (array-form children only)
+  slots?: Record<string, ReactNode>;  // rendered named slots (record-form children only)
   emit: (event: string) => void;  // dispatch bound actions
 }
 ```
@@ -251,10 +280,12 @@ interface Spec {
   elements: Record<string, UIElement>;
 }
 
+type SlotMap = Record<string, string | string[]>;  // slot name → child id(s)
+
 interface UIElement {
   type: string;
   props?: Record<string, unknown>;
-  children?: string[];
+  children?: string[] | SlotMap;  // ordered children or named slots
   on?: Record<string, ActionBinding | ActionBinding[]>;
   repeat?: { path: string; key?: string };
 }
@@ -267,7 +298,7 @@ interface ActionBinding {
 
 ## Demo
 
-The demo app (`demo/`) has fifteen self-contained cases:
+The demo app (`demo/`) has sixteen self-contained cases:
 
 | Case | What it shows | Source |
 |-----|---------------|--------|
@@ -276,7 +307,7 @@ The demo app (`demo/`) has fifteen self-contained cases:
 | **Actions** | `ActionButton` + handler writes timestamp to store | [`ActionsCase.tsx`](./demo/src/cases/actions/ActionsCase.tsx) · [`spec.json`](./demo/src/cases/actions/spec.json) · [`handlers.ts`](./demo/src/cases/actions/handlers.ts) · [`registry.ts`](./demo/src/cases/actions/registry.ts) |
 | **Large (1000)** | 1000-row × 2-column editable table via `repeat` — edit one cell, only that cell re-renders. Per-row ✕ delete using `{ $index: true }`. | [`LargeCase.tsx`](./demo/src/cases/large/LargeCase.tsx) · [`buildSpec.ts`](./demo/src/cases/large/buildSpec.ts) · [`handlers.ts`](./demo/src/cases/large/handlers.ts) · [`registry.ts`](./demo/src/cases/large/registry.ts) |
 | **Table** | 1000-row HTML `<table>` with `<thead>`/`<tbody>` structure built via `repeat` | [`TableCase.tsx`](./demo/src/cases/table/TableCase.tsx) · [`buildSpec.ts`](./demo/src/cases/table/buildSpec.ts) · [`handlers.ts`](./demo/src/cases/table/handlers.ts) · [`registry.ts`](./demo/src/cases/table/registry.ts) |
-| **Switch** | Conditional rendering via `useValue` — three mutually-exclusive status views | [`SwitchCase.tsx`](./demo/src/cases/switch/SwitchCase.tsx) · [`spec.json`](./demo/src/cases/switch/spec.json) · [`handlers.ts`](./demo/src/cases/switch/handlers.ts) · [`registry.ts`](./demo/src/cases/switch/registry.ts) |
+| **Switch** | Conditional rendering via named slots — three mutually-exclusive status views | [`SwitchCase.tsx`](./demo/src/cases/switch/SwitchCase.tsx) · [`spec.json`](./demo/src/cases/switch/spec.json) · [`handlers.ts`](./demo/src/cases/switch/handlers.ts) · [`registry.ts`](./demo/src/cases/switch/registry.ts) |
 | **Detail Modal** | Click a table row → async handler simulates backend call → detail data loads into a separate store path and displays in a Modal | [`DetailModalCase.tsx`](./demo/src/cases/detail-modal/DetailModalCase.tsx) · [`buildSpec.ts`](./demo/src/cases/detail-modal/buildSpec.ts) · [`handlers.ts`](./demo/src/cases/detail-modal/handlers.ts) · [`registry.ts`](./demo/src/cases/detail-modal/registry.ts) |
 | **Two Store** | Two stores, two Renderers side by side — settings panel changes update a live preview only on Apply via a cross-store handler | [`TwoStoreCase.tsx`](./demo/src/cases/two-store/TwoStoreCase.tsx) · [`buildPreviewSpec.ts`](./demo/src/cases/two-store/buildPreviewSpec.ts) · [`buildSettingsSpec.ts`](./demo/src/cases/two-store/buildSettingsSpec.ts) · [`handlers.ts`](./demo/src/cases/two-store/handlers.ts) · [`registry.ts`](./demo/src/cases/two-store/registry.ts) |
 | **Feature Flags** | Dashboard with ToggleField, SliderField, Badge, Alert, and SegmentedField — showcases five Mantine-derived components | [`FeatureFlagsCase.tsx`](./demo/src/cases/feature-flags/FeatureFlagsCase.tsx) · [`buildSpec.ts`](./demo/src/cases/feature-flags/buildSpec.ts) · [`registry.ts`](./demo/src/cases/feature-flags/registry.ts) |
@@ -284,6 +315,7 @@ The demo app (`demo/`) has fifteen self-contained cases:
 | **Drag & Drop** | Sortable table with drag-and-drop reordering, add, and remove — powered by @dnd-kit with the store as source of truth | [`DndTableCase.tsx`](./demo/src/cases/dnd-table/DndTableCase.tsx) · [`buildSpec.ts`](./demo/src/cases/dnd-table/buildSpec.ts) · [`registry.ts`](./demo/src/cases/dnd-table/registry.ts) |
 | **Mantine Table** | Mantine-styled table with pagination — 300 rows, 10 per page, page state in store. Self-contained PaginatedTable component | [`MantineTableCase.tsx`](./demo/src/cases/mantine-table/MantineTableCase.tsx) · [`buildSpec.ts`](./demo/src/cases/mantine-table/buildSpec.ts) · [`handlers.ts`](./demo/src/cases/mantine-table/handlers.ts) · [`registry.ts`](./demo/src/cases/mantine-table/registry.ts) |
 | **Nested Repeat** | Two-level nested `repeat` — categories contain items; the inner repeat uses `{ $item: "items" }` to resolve against the outer scope | [`NestedRepeatCase.tsx`](./demo/src/cases/nested-repeat/NestedRepeatCase.tsx) · [`spec.json`](./demo/src/cases/nested-repeat/spec.json) · [`registry.tsx`](./demo/src/cases/nested-repeat/registry.tsx) |
+| **Named Slots** | Record-form children map slot names to elements — a `Page` places header/sidebar/content/footer at different positions; `repeat` builds per-item slot instances | [`NamedSlotsCase.tsx`](./demo/src/cases/named-slots/NamedSlotsCase.tsx) · [`spec.json`](./demo/src/cases/named-slots/spec.json) · [`registry.tsx`](./demo/src/cases/named-slots/registry.tsx) |
 | **DOCX Export** | Edit data in a table, then export to a downloadable `.docx` — `renderGeneric` with separate React and DOCX specs and registry-side expression resolution | [`DocxExportCase.tsx`](./demo/src/cases/docx-export/DocxExportCase.tsx) · [`spec.json`](./demo/src/cases/docx-export/spec.json) · [`docxSpec.ts`](./demo/src/cases/docx-export/docxSpec.ts) · [`docxRegistry.ts`](./demo/src/cases/docx-export/docxRegistry.ts) · [`registry.ts`](./demo/src/cases/docx-export/registry.ts) |
 | **XLSX Export** | Edit data in a table, then export to a downloadable `.xlsx` via `renderGeneric` with the `xlsx` (SheetJS) package | [`XlsxExportCase.tsx`](./demo/src/cases/xlsx-export/XlsxExportCase.tsx) · [`spec.json`](./demo/src/cases/xlsx-export/spec.json) · [`xlsxSpec.ts`](./demo/src/cases/xlsx-export/xlsxSpec.ts) · [`xlsxRegistry.ts`](./demo/src/cases/xlsx-export/xlsxRegistry.ts) · [`registry.ts`](./demo/src/cases/xlsx-export/registry.ts) |
 

@@ -15,6 +15,7 @@ import { TranslationsCase } from "./cases/translations/TranslationsCase";
 import { DndTableCase } from "./cases/dnd-table/DndTableCase";
 import { MantineTableCase } from "./cases/mantine-table/MantineTableCase";
 import { NestedRepeatCase } from "./cases/nested-repeat/NestedRepeatCase";
+import { NamedSlotsCase } from "./cases/named-slots/NamedSlotsCase";
 import { DocxExportCase } from "./cases/docx-export/DocxExportCase";
 import { XlsxExportCase } from "./cases/xlsx-export/XlsxExportCase";
 
@@ -36,6 +37,7 @@ export function App() {
         <Route path="/dnd-table" component={DndTableCase} />
         <Route path="/mantine-table" component={MantineTableCase} />
         <Route path="/nested-repeat" component={NestedRepeatCase} />
+        <Route path="/named-slots" component={NamedSlotsCase} />
         <Route path="/docx-export" component={DocxExportCase} />
         <Route path="/xlsx-export" component={XlsxExportCase} />
         <Route>

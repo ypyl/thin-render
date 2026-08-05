@@ -436,4 +436,140 @@ describe("renderGeneric", () => {
       a: [{ b: [{ c: 42 }] }],
     });
   });
+
+  // ── Named slots (record-form children) ──
+
+  it("record-form children pass empty children and populated ctx.slots", () => {
+    const spec: Spec = {
+      root: "page",
+      elements: {
+        page: { type: "P", children: { header: "h", body: ["b1", "b2"] } },
+        h: { type: "T", props: { id: "H" } },
+        b1: { type: "T", props: { id: "B1" } },
+        b2: { type: "T", props: { id: "B2" } },
+      },
+    };
+    const registry: GenericRegistry = {
+      P: (_p, children, ctx) => ({ children, slots: ctx.slots }),
+      T: (props) => props.id,
+    };
+    expect(renderGeneric(spec, makeStore(), registry)).toEqual({
+      children: [],
+      slots: { header: ["H"], body: ["B1", "B2"] },
+    });
+  });
+
+  it("array-form children leave ctx.slots undefined", () => {
+    const spec: Spec = {
+      root: "page",
+      elements: {
+        page: { type: "P", children: ["a"] },
+        a: { type: "T", props: { id: "A" } },
+      },
+    };
+    const registry: GenericRegistry = {
+      P: (_p, children, ctx) => ({ children, slots: ctx.slots }),
+      T: (props) => props.id,
+    };
+    expect(renderGeneric(spec, makeStore(), registry)).toEqual({
+      children: ["A"],
+      slots: undefined,
+    });
+  });
+
+  it("slot with missing child key warns and renders null", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const spec: Spec = {
+      root: "page",
+      elements: {
+        page: { type: "P", children: { body: ["missing", "b"] } },
+        b: { type: "T", props: { id: "B" } },
+      },
+    };
+    const registry: GenericRegistry = {
+      P: (_p, children, ctx) => ({ children, slots: ctx.slots }),
+      T: (props) => props.id,
+    };
+    expect(renderGeneric(spec, makeStore(), registry)).toEqual({
+      children: [],
+      slots: { body: [null, "B"] },
+    });
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('missing element "missing"'),
+    );
+    warn.mockRestore();
+  });
+
+  it("empty record children yield empty slots", () => {
+    const spec: Spec = {
+      root: "page",
+      elements: {
+        page: { type: "P", children: {} },
+      },
+    };
+    const registry: GenericRegistry = {
+      P: (_p, children, ctx) => ({ children, slots: ctx.slots }),
+    };
+    expect(renderGeneric(spec, makeStore(), registry)).toEqual({
+      children: [],
+      slots: {},
+    });
+  });
+
+  it("repeat with record-form children concatenates slots across items", () => {
+    const spec: Spec = {
+      root: "list",
+      elements: {
+        list: { type: "P", repeat: { path: "/rows" }, children: { title: "t" } },
+        t: { type: "T", props: { id: "T" } },
+      },
+    };
+    const store = makeStore({ rows: [{}, {}] });
+    const registry: GenericRegistry = {
+      P: (_p, children, ctx) => ({ children, slots: ctx.slots }),
+      T: (props) => props.id,
+    };
+    expect(renderGeneric(spec, store, registry)).toEqual({
+      children: [],
+      slots: { title: ["T", "T"] },
+    });
+  });
+
+  it("repeat with record-form children over object concatenates per key", () => {
+    const spec: Spec = {
+      root: "list",
+      elements: {
+        list: { type: "P", repeat: { path: "/dict" }, children: { title: "t" } },
+        t: { type: "T", props: { id: "T" } },
+      },
+    };
+    const store = makeStore({ dict: { a: {}, b: {} } });
+    const registry: GenericRegistry = {
+      P: (_p, children, ctx) => ({ children, slots: ctx.slots }),
+      T: (props) => props.id,
+    };
+    expect(renderGeneric(spec, store, registry)).toEqual({
+      children: [],
+      slots: { title: ["T", "T"] },
+    });
+  });
+
+  it("repeat with record-form children over non-iterable yields empty slots", () => {
+    const spec: Spec = {
+      root: "list",
+      elements: {
+        list: { type: "P", repeat: { path: "/value" }, children: { title: "t" } },
+        t: { type: "T" },
+      },
+    };
+    const store = makeStore({ value: 42 });
+    const registry: GenericRegistry = {
+      P: (_p, children, ctx) => ({ children, slots: ctx.slots }),
+      T: () => "T",
+    };
+    expect(renderGeneric(spec, store, registry)).toEqual({
+      children: [],
+      slots: { title: [] },
+    });
+  });
 });

@@ -5,7 +5,7 @@ import { type ReactNode, createElement } from "react";
 import { Renderer, type ComponentProps, type Registry } from "./renderer";
 import { createStore } from "./store";
 import type { Spec, UIElement } from "./spec";
-import { usePath, useRepeatIndex } from "./hooks";
+import { usePath, useRepeatIndex, useValue } from "./hooks";
 
 // ── Spy components ────────────────────────────────────────────────
 
@@ -618,6 +618,319 @@ describe("Nested renderer path scope boundary", () => {
     expect(captured).toContain("/items/1");
     // The nested Renderer should see ""
     expect(captured).toContain("");
+  });
+});
+
+// ── Tests: Named slots (record-form children) ──────────────────────
+
+/** Captures ComponentProps (including slots) for later assertion. */
+function makeSlotSpy() {
+  const called: {
+    call: number;
+    element: unknown;
+    children: ReactNode;
+    slots: Record<string, ReactNode> | undefined;
+    emit: unknown;
+  }[] = [];
+  function SpyComponent({ element, children, slots, emit }: ComponentProps) {
+    called.push({ call: called.length, element, children, slots, emit });
+    return createElement(
+      "div",
+      { "data-testid": "spy" },
+      slots ? Object.values(slots) : children,
+    );
+  }
+  (SpyComponent as unknown as Record<string, unknown>).called = called;
+  return SpyComponent as typeof SpyComponent & { called: typeof called };
+}
+
+describe("Named slots", () => {
+  it("renders record-form children as named slots at component-chosen positions", () => {
+    const store = createStore();
+    const registry: Registry = {
+      Card: ({ slots }: ComponentProps) =>
+        createElement("div", { "data-testid": "card" }, slots?.body, slots?.header),
+      Text: ({ element }: ComponentProps) =>
+        createElement("span", { "data-testid": `text-${String(element.props?.id)}` }),
+    };
+    const spec: Spec = {
+      root: "card",
+      elements: {
+        card: { type: "Card", children: { header: "h", body: "b" } },
+        h: { type: "Text", props: { id: "H" } },
+        b: { type: "Text", props: { id: "B" } },
+      },
+    };
+
+    const { container } = render(
+      <Renderer spec={spec} registry={registry} store={store} />,
+    );
+
+    const card = container.querySelector('[data-testid="card"]')!;
+    const order = Array.from(card.querySelectorAll("span")).map((s) =>
+      s.getAttribute("data-testid"),
+    );
+    // Component places body before header, regardless of declaration order
+    expect(order).toEqual(["text-B", "text-H"]);
+  });
+
+  it("slot with multiple elements renders them in order", () => {
+    const store = createStore();
+    const registry: Registry = {
+      Toolbar: ({ slots }: ComponentProps) =>
+        createElement("div", { "data-testid": "toolbar" }, slots?.actions),
+      Text: ({ element }: ComponentProps) =>
+        createElement("span", { "data-testid": `text-${String(element.props?.id)}` }),
+    };
+    const spec: Spec = {
+      root: "toolbar",
+      elements: {
+        toolbar: { type: "Toolbar", children: { actions: ["t1", "t2"] } },
+        t1: { type: "Text", props: { id: "1" } },
+        t2: { type: "Text", props: { id: "2" } },
+      },
+    };
+
+    const { container } = render(
+      <Renderer spec={spec} registry={registry} store={store} />,
+    );
+
+    const toolbar = container.querySelector('[data-testid="toolbar"]')!;
+    const order = Array.from(toolbar.querySelectorAll("span")).map((s) =>
+      s.getAttribute("data-testid"),
+    );
+    expect(order).toEqual(["text-1", "text-2"]);
+  });
+
+  it("sets exactly one of children or slots based on children shape", () => {
+    const store = createStore();
+    const Spy = makeSlotSpy();
+    const registry: Registry = { Spy, ArraySpy: Spy, RecordSpy: Spy };
+    const spec: Spec = {
+      root: "root",
+      elements: {
+        root: { type: "Spy", children: ["arrayForm", "recordForm"] },
+        arrayForm: { type: "ArraySpy", children: ["leaf"] },
+        recordForm: { type: "RecordSpy", children: { x: "leaf" } },
+        leaf: { type: "Spy" },
+      },
+    };
+
+    render(<Renderer spec={spec} registry={registry} store={store} />);
+
+    // root + arrayForm + recordForm + leaf×2 (once per form)
+    const calls = Spy.called;
+    expect(calls).toHaveLength(5);
+    const arrayCall = calls.find((c) => (c.element as UIElement).type === "ArraySpy");
+    const recordCall = calls.find((c) => (c.element as UIElement).type === "RecordSpy");
+    expect(arrayCall).toBeDefined();
+    expect(recordCall).toBeDefined();
+    expect(arrayCall!.children).not.toBeUndefined();
+    expect(arrayCall!.slots).toBeUndefined();
+    expect(recordCall!.children).toBeUndefined();
+    expect(recordCall!.slots).toEqual({ x: expect.anything() });
+  });
+
+  it("missing key inside a slot warns and is skipped", () => {
+    const store = createStore();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const registry: Registry = {
+      Card: ({ slots }: ComponentProps) =>
+        createElement("div", { "data-testid": "card" }, slots?.body),
+      Text: ({ element }: ComponentProps) =>
+        createElement("span", { "data-testid": `text-${String(element.props?.id)}` }),
+    };
+    const spec: Spec = {
+      root: "card",
+      elements: {
+        card: { type: "Card", children: { body: ["missing", "b"] } },
+        b: { type: "Text", props: { id: "B" } },
+      },
+    };
+
+    const { container } = render(
+      <Renderer spec={spec} registry={registry} store={store} />,
+    );
+
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('missing element "missing"'),
+    );
+    const card = container.querySelector('[data-testid="card"]')!;
+    const texts = Array.from(card.querySelectorAll("span")).map((s) =>
+      s.getAttribute("data-testid"),
+    );
+    expect(texts).toEqual(["text-B"]);
+    warn.mockRestore();
+  });
+
+  it("empty record children yield an empty slots object", () => {
+    const store = createStore();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const Spy = makeSlotSpy();
+    const registry: Registry = { Spy };
+    const spec: Spec = {
+      root: "card",
+      elements: {
+        card: { type: "Spy", children: {} },
+      },
+    };
+
+    render(<Renderer spec={spec} registry={registry} store={store} />);
+
+    expect(warn).not.toHaveBeenCalled();
+    expect(Spy.called).toHaveLength(1);
+    expect(Spy.called[0]!.slots).toEqual({});
+    expect(Spy.called[0]!.children).toBeUndefined();
+    warn.mockRestore();
+  });
+
+  it("repeat with record-form children builds item-scoped slots", () => {
+    const store = createStore({
+      cards: [
+        { id: "A", title: "T1" },
+        { id: "B", title: "T2" },
+      ],
+    });
+    const seen: string[] = [];
+    const handlers = {
+      log: (params: Record<string, unknown>) => seen.push(String(params.id)),
+    };
+    const registry: Registry = {
+      Card: ({ slots }: ComponentProps) =>
+        createElement(
+          "div",
+          { "data-testid": "card" },
+          slots?.title,
+          slots?.action,
+        ),
+      Title: () => {
+        const title = useValue<string>(`${usePath()}/title`);
+        return createElement("span", { "data-testid": "title" }, title);
+      },
+      Action: ({ emit }: ComponentProps) =>
+        createElement("button", { "data-testid": "action", onClick: () => emit("click") }),
+    };
+    const spec: Spec = {
+      root: "cardList",
+      elements: {
+        cardList: {
+          type: "Card",
+          repeat: { path: "/cards" },
+          children: { title: "t", action: "a" },
+        },
+        t: { type: "Title" },
+        a: {
+          type: "Action",
+          on: { click: { action: "log", params: { id: { $item: "id" } } } },
+        },
+      },
+    };
+
+    const { container } = render(
+      <Renderer spec={spec} registry={registry} store={store} handlers={handlers} />,
+    );
+
+    const titles = Array.from(container.querySelectorAll('[data-testid="title"]')).map(
+      (n) => n.textContent,
+    );
+    expect(titles).toEqual(["T1", "T2"]);
+
+    // Each item's action resolves $item against its own scope (path strings)
+    const buttons = container.querySelectorAll('[data-testid="action"]');
+    expect(buttons).toHaveLength(2);
+    buttons[0]!.click();
+    buttons[1]!.click();
+    return new Promise<void>((resolve) =>
+      setTimeout(() => {
+        expect(seen).toEqual(["/cards/0/id", "/cards/1/id"]);
+        resolve();
+      }, 0),
+    );
+  });
+
+  it("repeat with record-form children iterates objects", () => {
+    const store = createStore({
+      settings: {
+        dark: { label: "Dark" },
+        light: { label: "Light" },
+      },
+    });
+    const registry: Registry = {
+      Card: ({ slots }: ComponentProps) =>
+        createElement("div", { "data-testid": "card" }, slots?.title),
+      Title: () => {
+        const label = useValue<string>(`${usePath()}/label`);
+        return createElement("span", { "data-testid": "title" }, label);
+      },
+    };
+    const spec: Spec = {
+      root: "cardList",
+      elements: {
+        cardList: {
+          type: "Card",
+          repeat: { path: "/settings" },
+          children: { title: "t" },
+        },
+        t: { type: "Title" },
+      },
+    };
+
+    const { container } = render(
+      <Renderer spec={spec} registry={registry} store={store} />,
+    );
+
+    const titles = Array.from(container.querySelectorAll('[data-testid="title"]')).map(
+      (n) => n.textContent,
+    );
+    expect(titles).toEqual(["Dark", "Light"]);
+  });
+
+  it("repeat with record-form children over non-iterable renders nothing", () => {
+    const store = createStore({ value: 42 });
+    const Spy = makeSlotSpy();
+    const registry: Registry = { Spy };
+    const spec: Spec = {
+      root: "cardList",
+      elements: {
+        cardList: {
+          type: "Spy",
+          repeat: { path: "/value" },
+          children: { title: "t" },
+        },
+        t: { type: "Spy" },
+      },
+    };
+
+    const { container } = render(
+      <Renderer spec={spec} registry={registry} store={store} />,
+    );
+
+    expect(Spy.called).toHaveLength(0);
+    expect(container.innerHTML).toBe("");
+  });
+
+  it("repeat with record-form children and unresolvable path renders nothing", () => {
+    const store = createStore();
+    const Spy = makeSlotSpy();
+    const registry: Registry = { Spy };
+    const spec: Spec = {
+      root: "cardList",
+      elements: {
+        cardList: {
+          type: "Spy",
+          repeat: { path: { $item: "subitems" } },
+          children: { title: "t" },
+        },
+        t: { type: "Spy" },
+      },
+    };
+
+    const { container } = render(
+      <Renderer spec={spec} registry={registry} store={store} />,
+    );
+
+    expect(Spy.called).toHaveLength(0);
+    expect(container.innerHTML).toBe("");
   });
 });
 

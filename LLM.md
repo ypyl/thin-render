@@ -31,7 +31,8 @@ import type { Spec, UIElement, ActionBinding, RepeatConfig, ComponentProps, Hand
 | Type | Shape |
 |------|-------|
 | `Spec` | `{ root: string; elements: Record<string, UIElement> }` |
-| `UIElement` | `{ type: string; props?: Record<string, unknown>; children?: string[]; on?: OnMap; repeat?: RepeatConfig }` |
+| `UIElement` | `{ type: string; props?: Record<string, unknown>; children?: string[] \| SlotMap; on?: OnMap; repeat?: RepeatConfig }` |
+| `SlotMap` | `Record<string, string \| string[]>` — slot name → child element id(s); record-form `children` |
 | `ActionBinding` | `{ action: string; params?: Record<string, unknown> }` |
 | `OnMap` | `Record<string, ActionBinding \| ActionBinding[]>` |
 | `WatchMap` | `Record<string, ActionBinding[]>` |
@@ -59,10 +60,13 @@ Every registry component receives:
 ```ts
 interface ComponentProps {
   element: UIElement;               // current spec element
-  children?: ReactNode;             // rendered children
+  children?: ReactNode;             // rendered children (array-form children only)
+  slots?: Record<string, ReactNode>;// rendered named slots (record-form children only)
   emit: (event: string) => void;   // dispatch on.* actions
 }
 ```
+
+Exactly one of `children`/`slots` is set, based on the element's `children` shape: `["a", "b"]` → `children`; `{ "header": "h", "toolbar": ["t1", "t2"] }` → `slots`. The spec decides which element goes into which slot; the component decides where each slot renders. Slot names are never React keys (element keys are) — do not reference the same child id from two slots of one element.
 
 **Do NOT** call hooks like `useBound` inside `ElementRenderer` — only inside your registry components.
 
@@ -174,26 +178,22 @@ function ValidatingField({ element }: ComponentProps) {
 
 Reactive validation via `useValue`/`useEffect` — works everywhere, including inside repeats.
 
-### 5. Conditional Render (useValue)
+### 5. Conditional Render (slots)
 
 ```json
-{ "type": "Switch", "props": { "path": "/status" }, "children": ["loading", "loaded", "error"] }
+{ "type": "Switch", "props": { "path": "/status" }, "children": { "loading": "loading", "loaded": "loaded", "error": "error" } }
 ```
 
 ```tsx
-function Switch({ element, children }: ComponentProps) {
+function Switch({ element, slots }: ComponentProps) {
   const status = useValue<string>(String(element.props?.path));
-  const match = Children.toArray(children).find(c =>
-    (c as ReactElement).key?.replace(/^\.\$/, "") === status
-  );
-  return <>{match}</>;
+  return slots?.[status] ?? null;
 }
 ```
 
-Use special child keys: `{ "key": ".$loading" }` — the component strips the `.$` prefix for matching.
+Record-form children make each branch a named slot; the component renders the slot whose name matches the store value. No key matching needed.
 
 ### 6. Derived Subscription (useSelector)
-
 ```tsx
 import { useSelector } from "thin-render";
 
@@ -208,7 +208,6 @@ function EditModeGate() {
 Window guidance: choose the tightest path that covers every read. Same-subtree multi-field derives use one call (`useSelector("/user", (u) => u.name === "Main" && u.role === "admin")`); unrelated branches use the root window (`useSelector("", (s) => s.items.length > 0 && s.selectedId != null)`) or compose narrow calls (`useSelector("/items", ...)` + `useSelector("/selectedId", ...)`) and combine in render.
 
 ### 7. Modal (store-gated overlay)
-
 ```json
 { "type": "Modal", "props": { "path": "/detailData", "title": "Details" }, "children": ["body"] }
 ```
@@ -218,6 +217,37 @@ function Modal({ element, children }: ComponentProps) {
   const data = useValue(String(element.props?.path));
   const setData = useSetValue(String(element.props?.path));
   return data ? <Overlay onClose={() => setData(undefined)}>{children}</Overlay> : null;
+}
+```
+
+### 8. Named Slots Layout
+
+```json
+{ "type": "Page", "children": { "header": "pageTitle", "sidebar": ["link1", "link2"], "content": "mainText", "footer": "pageFooter" } }
+```
+
+```tsx
+function Page({ slots }: ComponentProps) {
+  return (
+    <div>
+      <header>{slots?.header}</header>
+      <aside>{slots?.sidebar}</aside>
+      <main>{slots?.content}</main>
+      <footer>{slots?.footer}</footer>
+    </div>
+  );
+}
+```
+
+Named slots let a layout component place children at different positions. A slot holding multiple ids renders as one node (fragment). With `repeat` + record-form children, one component instance renders **per item**, each with slots scoped to its item path:
+
+```json
+{ "type": "SlotCard", "repeat": { "path": "/cards" }, "children": { "title": "t", "body": "b" } }
+```
+
+```tsx
+function SlotCard({ slots }: ComponentProps) {
+  return <Paper><Title>{slots?.title}</Title>{slots?.body}</Paper>;
 }
 ```
 

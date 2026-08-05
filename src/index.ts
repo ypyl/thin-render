@@ -1,4 +1,4 @@
-export type { Spec } from "./spec.js";
+export type { Spec, UIElement, SlotMap } from "./spec.js";
 export {
   getByPath,
   createStore,

@@ -1,0 +1,60 @@
+{
+  "root": "page",
+  "elements": {
+    "page": {
+      "type": "CaseContainer",
+      "props": {
+        "title": "Named Slots",
+        "description": "Record-form children map slot names to elements; the parent component renders each slot at a different position.",
+        "technicalDescription": "Spec\nCaseContainer → [Page with children { header, sidebar[3], content, footer }] + [SlotCard repeat: /cards with { title, body } slots]\nState\n{ cards: [{ title, body }, { title, body }] } (static)\nFeatures\n• Named slots — record-form children; each slot renders where the component places it\n• Array slots — sidebar holds three elements in one slot\n• Repeat + slots — one SlotCard instance per item, each with its own scoped title/body slots\n• SlotText — reads a field relative to its repeat scope via usePath()"
+      },
+      "children": ["layout", "cards"]
+    },
+    "layout": {
+      "type": "Page",
+      "children": {
+        "header": "pageTitle",
+        "sidebar": ["link1", "link2", "link3"],
+        "content": "mainText",
+        "footer": "pageFooter"
+      }
+    },
+    "pageTitle": {
+      "type": "StaticText",
+      "props": { "text": "📌 Page header — placed via the header slot" }
+    },
+    "link1": {
+      "type": "StaticText",
+      "props": { "text": "🔗 Link one" }
+    },
+    "link2": {
+      "type": "StaticText",
+      "props": { "text": "🔗 Link two" }
+    },
+    "link3": {
+      "type": "StaticText",
+      "props": { "text": "🔗 Link three" }
+    },
+    "mainText": {
+      "type": "StaticText",
+      "props": { "text": "Main content — rendered in the content slot, to the right of the sidebar. Note the spec declares header first, but this element still renders in the middle: the component decides where each slot goes." }
+    },
+    "pageFooter": {
+      "type": "StaticText",
+      "props": { "text": "© Footer — rendered below everything via the footer slot" }
+    },
+    "cards": {
+      "type": "SlotCard",
+      "repeat": { "path": "/cards" },
+      "children": { "title": "cardTitle", "body": "cardBody" }
+    },
+    "cardTitle": {
+      "type": "SlotText",
+      "props": { "field": "title" }
+    },
+    "cardBody": {
+      "type": "SlotText",
+      "props": { "field": "body" }
+    }
+  }
+}
