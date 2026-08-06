@@ -90,9 +90,7 @@ export function useSetValue(path: string): (value: unknown) => void {
 /** Two-way bind: [currentValue, setValue]. */
 export function useBound<T>(path: string): [T | undefined, (value: T) => void] {
   const value = useValue<T>(path);
-  const setRaw = useSetValue(path);
-  const set = useCallback((v: T) => setRaw(v), [setRaw]);
-  return [value, set];
+  return [value, useSetValue(path)];
 }
 
 /**
