@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+The detail modal demo simulates an async backend: clicking Details loads an item's record into a modal with a loading state.
+
+## Requirements
 
 ### Requirement: Handler simulates async backend call
 The `loadDetail` handler SHALL simulate an async backend call. It SHALL set `/loadingDetail` to `true`, SHALL await a delay of at least 400ms, SHALL write generated detail data (revenue, employees, founded, headquarters) to `/itemDetail`, and SHALL set `/loadingDetail` to `false`. The detail data SHALL be looked up from a hardcoded mapping keyed by item ID.

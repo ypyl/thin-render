@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+The demo app stores static rendering specs as standalone JSON files conforming to the Spec schema.
+
+## Requirements
 
 ### Requirement: Demo specs are stored as JSON files
 The demo application SHALL store its static rendering specs as standalone JSON files in `demo/src/specs/`, each conforming to the `Spec` schema (root key + elements map).

@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+The two-store demo renders settings and preview side by side with independent stores, updating the preview only on Apply.
+
+## Requirements
 
 ### Requirement: Two store demo exists with side-by-side renderers
 A demo case SHALL exist at `/two-store` that renders two `<Renderer>` instances side-by-side in a `SimpleGrid cols={2}` layout, each with its own store. The left panel SHALL show settings fields (title `BoundField`, color `SelectField`, size `SelectField`) and an Apply button. The right panel SHALL show a `PreviewBox`. The left panel SHALL be always editable (store initialized with `editingSection: true`).

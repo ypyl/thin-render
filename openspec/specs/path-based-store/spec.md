@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+The store reads and immutably writes nested values by JSON-Pointer-like paths with structural sharing.
+
+## Requirements
 
 ### Requirement: Store supports get and set at JSON-Pointer-like paths
 A `Store` created by `createStore(initial)` SHALL expose `get(path)` returning the value at the path (or `undefined` if any segment is missing) and `set(path, value)` performing an immutable structural-sharing update. Segments are `/`-separated; leading `/` is optional.

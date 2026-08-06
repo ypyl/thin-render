@@ -2,7 +2,7 @@
 
 Provides a pure, zero-dependency function that walks a spec tree, resolves expressions against a store, and calls user-provided registry functions to produce output of any type — without React, subscriptions, or DOM involvement.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: renderGeneric walks spec tree from root
 

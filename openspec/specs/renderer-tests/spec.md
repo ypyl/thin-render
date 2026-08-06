@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+The Renderer renders a spec's root element through the matching registry component.
+
+## Requirements
 
 ### Requirement: Renderer renders a simple spec
 The Renderer SHALL accept a spec, registry, and store, and render the root element through its corresponding registry component.

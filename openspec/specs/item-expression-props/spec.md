@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+Repeat scopes expose the current item's numeric index through a repeat index context.
+
+## Requirements
 
 ### Requirement: RepeatScope exposes repeat index via context
 The `RepeatScope` component SHALL provide both a `PathContext` (existing) and a `RepeatIndexContext` (new) to its children. The index SHALL be the numeric position of the item in the repeat array.

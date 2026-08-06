@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+The feature-flags demo showcases five Mantine-derived form components in a single-page dashboard.
+
+## Requirements
 
 ### Requirement: Feature flags dashboard demo exists
 A demo case SHALL exist at `/feature-flags` that showcases five new Mantine-derived components in a single-page dashboard.

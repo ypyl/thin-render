@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+The edit-toggle action system snapshots store state and toggles the editing section, backing the Edit/Save/Cancel lifecycle.
+
+## Requirements
 
 ### Requirement: startEdit handler snapshots state and enables edit mode
 A handler named `startEdit` SHALL be registered in the demo's handlers map. When invoked, it SHALL deep-clone the full store state via `getState()` and write it to `/_snapshot`, then set `/editingSection` to `true`. The handler MUST NOT require params.

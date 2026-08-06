@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+The project runs its test suite with Vitest and enforces full coverage thresholds.
+
+## Requirements
 
 ### Requirement: Vitest runs all tests
 The project SHALL use Vitest as its test runner, replacing `node:test`. Running `npm test` SHALL execute all test files matching `src/**/*.test.ts` via `vitest run`.

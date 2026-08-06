@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+The StackRow component wraps repeated children in a Mantine Stack with a configurable gap.
+
+## Requirements
 
 ### Requirement: StackRow component adds Mantine Stack gap between children
 A `StackRow` component SHALL exist as a separate registry component that wraps children in a Mantine `<Stack>` with a configurable `gap` prop. It SHALL read `gap` from `element.props.gap` and default to `"md"` when omitted. This component is the repeat-container counterpart to the transparent `Row` component — `Row` renders a Fragment, `StackRow` renders a Stack with gap.

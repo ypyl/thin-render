@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+Every hook exported from the library has at least one test verifying its core behavior.
+
+## Requirements
 
 ### Requirement: All exported hooks have tests
 Every hook exported from `src/hooks.ts` SHALL have at least one test verifying its core behavior.

@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+The Modal component shows a Mantine overlay controlled by a store path, without outside-click or Escape dismissal.
+
+## Requirements
 
 ### Requirement: Modal component reads visibility from a store path
 A `Modal` component SHALL exist as a registry component. It SHALL accept a `path` prop and use `useValue(path)` to determine visibility. When the value at `path` is truthy, it SHALL render a Mantine `<Modal>` with `opened={true}`, an optional `title` prop, and its children inside the modal body. When falsy, nothing SHALL render. The modal SHALL NOT close on outside click or Escape — only the store path change controls visibility.

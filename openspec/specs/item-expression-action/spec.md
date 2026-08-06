@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+The $item expression resolves to absolute store path strings in action params at dispatch time.
+
+## Requirements
 
 ### Requirement: resolveParams resolves $item to absolute state path
 `resolveParams` SHALL detect values of the form `{ $item: "<field>" }` and resolve them to the absolute state path `${repeatBasePath}/${field}` at dispatch time. When `<field>` is the empty string `""`, it SHALL resolve to `repeatBasePath` itself. Resolution MUST be pure string concatenation — no store read, no subscription. When called outside a repeat scope (`repeatBasePath` is undefined), `$item` SHALL resolve to `undefined`.

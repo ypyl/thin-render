@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+The SelectField component binds a store path to a Mantine select dropdown, always editable.
+
+## Requirements
 
 ### Requirement: SelectField renders a dropdown bound to a store path
 A `SelectField` component SHALL exist as a registry component. It SHALL accept `bind` (store path) and `options` (array of `{ value, label }`) props. It SHALL read the current value from the bound path via `useBound` and SHALL write the selected value on change. It SHALL be always editable — it SHALL NOT check `/editingSection`. It SHALL render a Mantine `<Select>` with the options as `data`.

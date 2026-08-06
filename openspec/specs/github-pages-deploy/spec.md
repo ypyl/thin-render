@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+The demo is built with a Vite base path so all built assets resolve correctly under GitHub Pages.
+
+## Requirements
 
 ### Requirement: Demo builds with GitHub Pages base path
 The demo Vite config SHALL set `base` to `'/thin-render/'` so that all built asset paths are absolute and resolve correctly when served from `https://<user>.github.io/thin-render/`.

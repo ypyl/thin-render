@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+The Badge component renders a Mantine badge with configurable text and color.
+
+## Requirements
 
 ### Requirement: Badge renders a Mantine Badge with text and color from props
 A `Badge` component SHALL exist as a registry component. It SHALL read `text` and `color` from `element.props`. It SHALL render a Mantine `<Badge>` with `color={color}` containing the text. It SHALL NOT subscribe to the store.

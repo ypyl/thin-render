@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+Registry components receive rendered children and named slots through the ComponentProps contract, with exactly one of children or slots set per element.
+
+## Requirements
 
 ### Requirement: Registry maps type names to binding components
 The library SHALL treat a registry as a plain `Record<string, React.ComponentType<ComponentProps>>` mapping spec `type` strings to components. `ComponentProps` SHALL be `{ element: UIElement; children?: ReactNode; slots?: Record<string, ReactNode>; emit: (event: string) => void }`.
@@ -45,14 +48,14 @@ A binding component SHALL translate `element.props` paths into calls to `useBoun
 - **THEN** keystrokes in `TextInput` call `setV`, which calls `store.set(bind, v)`, which re-renders only the `BoundField` subscribed to that path
 
 ### Requirement: Multi-path contract supported via binds
-A binding component MAY declare a contract using `props.binds` (a map of role → path) and call `useBound` once per role. This enables composite components (e.g. `FullName` with first/last) without hardcoding paths.
+A binding component SHALL declare a multi-path contract using `props.binds` (a map of role → path) and call `useBound` once per role. This enables composite components (e.g. `FullName` with first/last) without hardcoding paths.
 
 #### Scenario: Multi-path binds drive one component
 - **WHEN** a `FullName` binding reads `useBound(element.props.binds.first)` and `useBound(element.props.binds.last)` and renders two `TextInput`s
 - **THEN** editing the "first" input re-renders `FullName` (subscribed to `/user/first`) but a sibling component subscribed to `/user/last` does not re-render
 
 ### Requirement: Action contract supported via emit
-A binding component MAY invoke `emit(event)` for DOM events on its presentational component (e.g. `onClick={() => emit("click")}`). The mapping from event name to action binding lives in the spec's `element.on`, not in the component. The component declares only that it emits a named event.
+A binding component SHALL invoke `emit(event)` for DOM events on its presentational component (e.g. `onClick={() => emit("click")}`). The mapping from event name to action binding lives in the spec's `element.on`, not in the component. The component declares only that it emits a named event.
 
 #### Scenario: ActionButton is path-independent of the handler
 - **WHEN** two specs reuse the same `ActionButton` binding (which only does `onClick={() => emit("click")}`) with different `on.click` bindings

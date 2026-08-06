@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+The demo's BoundField renders read-only or editable depending on the editing section state in the store.
+
+## Requirements
 
 ### Requirement: BoundField reads editing state from store
 The BoundField component in the demo SHALL call `useValue<boolean>("/editingSection")` to determine whether it renders in read-only or editable mode. It MUST NOT assume editing state from any source other than `/editingSection` in the store.

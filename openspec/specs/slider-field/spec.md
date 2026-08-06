@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+The SliderField component binds a numeric store path to a Mantine slider with min, max, and an optional label.
+
+## Requirements
 
 ### Requirement: SliderField renders a Mantine Slider bound to a store path
 A `SliderField` component SHALL exist as a registry component. It SHALL accept `bind` (store path), `min`, `max`, and optional `label` props. It SHALL use `useBound<number>` to read and write the numeric value. It SHALL render a Mantine `<Slider>` with `value={value}`, `min={min}`, `max={max}`, and `onChange={setValue}`. When `label` is present and non-empty, it SHALL render a label showing the formatted value.

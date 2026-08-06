@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+The ButtonGroup component groups child buttons into a connected Mantine button group.
+
+## Requirements
 
 ### Requirement: ButtonGroup wraps children in Mantine Button.Group
 A `ButtonGroup` component SHALL exist as a registry component that renders children inside Mantine's `<Button.Group>`. It SHALL accept the standard `ComponentProps` interface (`element`, `children`, `emit`) and SHALL ignore `element.props`. The component SHALL be stateless and presentational.

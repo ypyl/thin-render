@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+The ToggleField component binds a boolean store path to a Mantine switch.
+
+## Requirements
 
 ### Requirement: ToggleField renders a Mantine Switch bound to a store path
 A `ToggleField` component SHALL exist as a registry component. It SHALL accept a `bind` prop (store path) and SHALL use `useBound<boolean>` to read and write the boolean value. It SHALL render a Mantine `<Switch>` with `checked={value}` and `onChange` calling `setValue`.

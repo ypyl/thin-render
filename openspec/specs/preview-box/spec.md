@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+The PreviewBox component renders styled preview content (title, color, font size) from the store.
+
+## Requirements
 
 ### Requirement: PreviewBox renders styled content from /preview paths
 A `PreviewBox` component SHALL render a Mantine `<Paper>` displaying preview content. It SHALL read title from `/preview/title`, color from `/preview/color`, and font size from `/preview/size`. It SHALL apply the color and size as inline CSS styles.

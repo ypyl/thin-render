@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+The EditToggle component switches between a single Edit button and a Save/Cancel button group based on the editing state.
+
+## Requirements
 
 ### Requirement: EditToggle renders one button in view mode, two buttons in edit mode
 The demo SHALL provide a reusable `EditToggle` component that subscribes to `/editingSection` via `useValue`. When `/editingSection` is falsy, it SHALL render a single "Edit" button. When `/editingSection` is true, it SHALL render two buttons: "Save" and "Cancel", displayed as a horizontal group with the Cancel button visually distinct (outline variant).
