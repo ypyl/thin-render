@@ -9,8 +9,8 @@ export function buildTableSpec(itemCount: number): Spec {
         type: "CaseContainer",
         props: {
           title: `${itemCount}-Row HTML Table`,
-          description: "1,000-row HTML table with <thead>/<tbody> — demonstrates composing semantic HTML via repeat on <tr> elements.",
-          technicalDescription: "Spec\nCaseContainer → StackRow → [EditToggle, Table → [THead → Tr → Th×4, TBody(repeat: /items) → Tr → [Td→BoundField×3, Td→ActionButton(\"✕\")]]]\nState\n{ items: Array<{ name, email }> } — 1,000 rows\nFeatures\n• repeat — array iteration composing semantic HTML (THead/TBody/Tr/Td/Th)\n• Spec-driven HTML — full table structure declared in JSON\n• $index — action params for per-row deletion\n• Per-path subscriptions — granular re-renders at scale",
+          description: "The same 1,000 rows as a real HTML table with a header row, editable cells, and per-row delete.",
+          technicalDescription: "The data is displayed as a proper HTML table: a header row and 1,000 body rows. Each cell is editable in place and every row has a delete button. The table structure, including the header and body sections, is defined in the page data rather than in code.",
         },
         children: ["table"],
       },

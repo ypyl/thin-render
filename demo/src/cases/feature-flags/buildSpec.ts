@@ -9,8 +9,8 @@ export function buildDashboardSpec(): Spec {
         type: "CaseContainer",
         props: {
           title: "Feature Flags Dashboard",
-          description: "Toggle features, set rollout percentages, and switch environments — demonstrates five new Mantine-derived components in a single dashboard.",
-          technicalDescription: "Spec\nCaseContainer → StackRow → [Alert, SegmentedField(bind: \"/environment\"), 3×FieldsetRow with ToggleField + Badge + SliderField]\nState\n{ environment: string, flags: { darkMode: bool, betaDashboard: bool, aiSuggestions: { enabled: bool, rollout: number } } }\nFeatures\n• ToggleField — boolean store binding\n• SliderField — numeric binding with min/max\n• SegmentedField — enum binding with labeled options\n• Badge, Alert — static display components\n• FieldsetRow — grouped layout wrapper\n• Nested paths — flags.aiSuggestions.enabled, flags.aiSuggestions.rollout",
+          description: "A feature-flag dashboard. Toggle features on and off, set rollout percentages with sliders, and switch environments.",
+          technicalDescription: "The dashboard manages three kinds of settings: on/off toggles for features, percentage sliders for how widely a feature is rolled out, and a choice of environment. Every control updates the page's data immediately, and the banner and badges reflect your current choices.",
         },
         children: ["content"],
       },

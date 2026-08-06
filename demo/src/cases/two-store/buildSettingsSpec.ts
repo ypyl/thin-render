@@ -9,8 +9,8 @@ export function buildSettingsSpec(): Spec {
         type: "CaseContainer",
         props: {
           title: "Settings",
-          description: "Change the values below and click Apply to update the preview.",
-          technicalDescription: "Spec\nCaseContainer → StackRow → [BoundField(bind: \"settings/title\"), SelectField(bind: \"settings/color\"), SelectField(bind: \"settings/size\"), ActionButton(\"Apply\")]\nState\n{ settings: { title, color, size }, editingSection: true }\nFeatures\n• Multiple stores — two independent createStore instances\n• Cross-store handler — applySettings reads store A, writes store B via storeB.set\n• SelectField — enum-style dropdown binding\n• BoundField — text binding with nested path",
+          description: "Change the title, color, or size below, then click Apply to update the preview.",
+          technicalDescription: "The page has two independent sections: a settings panel and a preview. Editing the fields changes only the settings panel. The preview updates only when you click Apply, which copies the current settings across.",
         },
         children: ["fields"],
       },

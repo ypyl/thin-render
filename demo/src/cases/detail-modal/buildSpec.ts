@@ -28,8 +28,8 @@ export function buildDetailModalSpec(): Spec {
         type: "CaseContainer",
         props: {
           title: "Detail Modal Demo",
-          description: "Click a row to load item details from a simulated backend — demonstrates interdependent state, async handlers, and the Modal component.",
-          technicalDescription: "Spec\nCaseContainer → [Table(repeat: /items) → THead + TBody → Tr → [BoundField×3, ActionButton(\"Details\")], Modal(path: \"/itemDetail\") → LoadingBox(path: \"/loadingDetail\") → StackRow → [BoundField×4, ActionButton(\"Close\")]]\nState\n{ items: Item[], loadingDetail: \"false\", itemDetail: {} }\nFeatures\n• repeat — array iteration in a table\n• Action dispatch — $item passes row data to async handlers\n• Async handlers — simulated backend fetch with timeout\n• Modal — overlay component gated by store path\n• LoadingBox — conditional loading overlay\n• Interdependent state — modal, loading, and detail share store paths",
+          description: "Click Details on a row to load that item's full record from a simulated server. A brief loading indicator appears, then the record opens in a popup.",
+          technicalDescription: "Each row has a Details button. Clicking it simulates a network request: a loading indicator appears, and when the response arrives a popup opens with the item's full record. The popup has its own Close button and its content is loaded per item, on demand.",
         },
         children: ["table", "modal"],
       },

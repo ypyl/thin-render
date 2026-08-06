@@ -5,7 +5,7 @@
       "type": "CaseContainer",
       "props": {
         "title": "Customer",
-        "description": "Child package: its own spec, registry, and components."
+        "description": "A customer card with name, email, and editable notes, plus a button that loads more details."
       },
       "children": ["fields"]
     },

@@ -9,8 +9,8 @@ export function buildPreviewSpec(): Spec {
         type: "CaseContainer",
         props: {
           title: "Live Preview",
-          description: "Preview updates only when you click Apply.",
-          technicalDescription: "Spec\nCaseContainer → PreviewBox\nState\n{ preview: { title, color, size } }\nFeatures\n• Two Renderers — side-by-side independent spec rendering\n• PreviewBox — renders preview content from store state\n• Cross-store communication — updated by settings panel handler",
+          description: "This side shows the settings after you click Apply. Until then it keeps showing the previous values.",
+          technicalDescription: "The preview shows the title, color, and size chosen in the settings panel, but only after Apply is clicked there. Before that it keeps the previous values: the two sides are independent and only the Apply button connects them.",
         },
         children: ["preview"],
       },

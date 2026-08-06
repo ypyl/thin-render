@@ -5,8 +5,8 @@
       "type": "CaseContainer",
       "props": {
         "title": "Nested Package",
-        "description": "One parent store; the same child package embedded at two different base paths, plus a standalone instance with its own store.",
-        "technicalDescription": "Parent spec\nCaseContainer → GridRow(cols 2) → [top embedded, bottom embedded, detail, standalone]\nState\n{ top: { customer: {...} }, bottom: { customer: {...} }, detail: null }\nHow it works\n• createStoreView(store, base) — the child package reads/writes its subtree of the parent store as if it were its own root; no data copies\n• EmbeddedChild — boundary component: view + parent.* bridge + nested <Renderer>\n• Child writes (notes field) land directly in the parent store at the occurrence's base path\n• \"Load details\" fires parent.loadDetail with { id: { $state: \"/id\" } } — params resolved in the child's world, handler executed with the parent's accessors\n• Standalone — own store, same spec/registry; parent.loadDetail implemented locally"
+        "description": "The same small feature appears twice inside one page and once as a standalone card. Each instance keeps its own data.",
+        "technicalDescription": "A small feature, a customer card with editable notes and a Load details button, is used three times: twice embedded in this page and once as its own standalone card. The two embedded copies store their data inside this page's data, so each holds its own values. The standalone copy works exactly like the others but keeps its data separately."
       },
       "children": ["panels"]
     },

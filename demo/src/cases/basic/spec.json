@@ -3,7 +3,7 @@
   "elements": {
     "card": {
       "type": "CaseContainer",
-      "props": { "title": "Basic Static Rendering", "description": "Static spec rendering — no state, no actions. The simplest possible Renderer usage.", "technicalDescription": "Spec\nCaseContainer → StaticText(\"Hello from thin-render!\")\nState\n{} — empty store, no mutations\nFeatures\n• Renderer — spec-driven component resolution via registry\n• ElementRenderer — memoized per-element rendering\n• Spec JSON — declarative layout without imperative JSX" },
+      "props": { "title": "Basic Static Rendering", "description": "A single greeting card. The whole page is described as data, not code, and there is nothing to interact with.", "technicalDescription": "This page has no state and no actions. The layout is defined once as plain data and the library renders it as the greeting card you see. Because nothing can change, the page never updates." },
       "children": ["greeting"]
     },
     "greeting": {

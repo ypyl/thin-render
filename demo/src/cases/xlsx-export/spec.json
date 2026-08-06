@@ -5,8 +5,8 @@
       "type": "CaseContainer",
       "props": {
         "title": "XLSX Export",
-        "description": "Edit data in the table below, then click Download XLSX to export it as a spreadsheet — demonstrates renderGeneric with separate React and XLSX specs sharing one store.",
-        "technicalDescription": "Spec\nReact: CaseContainer → { BoundField(title), Table → [THead → Tr → Th×3, TBody(repeat:/rows) → Tr → [Td → BoundField×3]] }\nXLSX: Workbook → Sheet → [XlsxRow(header), SheetData(repeat:/rows) → XlsxRow → XlsxCell($item:field)]\nState\n{ title, rows: [{ id, name, qty, price }] }\nFeatures\n• Two specs — React spec for interactive preview, XLSX spec for export, both using the same store\n• renderGeneric — walks the XLSX spec tree, passes raw props + ctx to registry functions\n• Expression resolution in registry — resolve() helper reads $state/$item from store via ctx\n• ctx.basePath scoping — inside repeat, resolve() composes absolute paths from ctx.basePath\n• xlsx builders — registry maps spec types to Workbook, Sheet, XlsxRow, XlsxCell\n• XLSX.write + Blob download — one-click .xlsx generation"
+        "description": "Edit a small table of data, then click Download XLSX to export it as a spreadsheet file.",
+        "technicalDescription": "The page is a data editor: change the title or any cell and the data updates. The Download XLSX button takes the current data and produces a spreadsheet file from it, including the title and the full table. The spreadsheet always mirrors what you see on screen."
       },
       "children": ["titleField", "dataTable"]
     },

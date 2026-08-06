@@ -5,8 +5,8 @@
       "type": "CaseContainer",
       "props": {
         "title": "Nested Repeat via $item Expression",
-        "description": "Two-level repeat: outer iterates over categories, inner iterates over each category's items using { \"$item\": \"items\" } in the repeat path.",
-        "technicalDescription": "Spec\nOuter repeat: path \"/categories\"\n  ├─ CategoryTitle — reads name from scope\n  └─ Inner repeat: path { \"$item\": \"items\" }\n      ├─ BoundField for \"name\"\n      └─ BoundField for \"qty\"\n\nStore\n{ categories: [{ name, items: [{ name, qty }] }] }\n\nFeatures\n• $item expression in repeat.path — resolved against the current PathContext\n• Nested RepeatScope — each level sets a fully-qualified base path\n• BoundField as repeat children — reads/writes the correct item path\n• CategoryTitle as repeat child — reads category name from scope"
+        "description": "A two-level list: categories on the outside, and editable items inside each category.",
+        "technicalDescription": "The page shows categories, and each category contains its own small form of items. Every item belongs to its category: editing an item changes that item's data within its category. The structure is described once and repeated for every category and item."
       },
       "children": ["categoryList"]
     },

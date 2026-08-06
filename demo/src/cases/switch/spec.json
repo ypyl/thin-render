@@ -3,7 +3,7 @@
   "elements": {
     "card": {
       "type": "CaseContainer",
-      "props": { "title": "Switch Demo", "description": "Conditional rendering using useValue — renders different subtrees based on store state.", "technicalDescription": "Spec\nCaseContainer → [ButtonGroup → [ActionButton×3], BoundField(bind: \"/appStatus\"), Switch(path: \"/appStatus\") → loading|loaded|error slots]\nState\n{} initially; at runtime: appStatus (\"loading\" | \"loaded\" | \"error\")\nFeatures\n• Switch — conditional rendering via named children slots (record-form children)\n• Action dispatch — setStatus handler with params\n• ButtonGroup — horizontal button layout\n• Multiple subtrees — different slot per state value" },
+      "props": { "title": "Switch Demo", "description": "A status panel that shows one of three views. Set the status to Loading, Loaded, or Error and the page swaps to the matching view.", "technicalDescription": "Exactly one of three views is visible at any time, depending on the current status. The buttons set the status: Loading shows a spinner, Loaded shows the data card, Error shows an error card. Switching status swaps the view instantly." },
       "children": ["buttons", "statusLabel", "switch"]
     },
     "buttons": {

@@ -9,8 +9,8 @@ export function buildTranslationsSpec(): Spec {
         type: "CaseContainer",
         props: {
           title: "Translations Editor",
-          description: "Each row is a translation key with its editable value — powered by repeat on a plain object (not an array).",
-          technicalDescription: "Spec\nCaseContainer → StackRow(repeat: /translations, object) → FieldsetRow → [PathLabel, BoundField(bind: \"\")]\nState\n{ translations: Record<string, string>, editingSection: true }\nFeatures\n• repeat — object iteration via Object.entries\n• usePath — PathLabel extracts last path segment\n• BoundField — two-way inline value editing\n• Spec-driven layout — no imperative JSX in the case component",
+          description: "A translation table. Each row is one translation key with an editable value, so you can change the text the page displays.",
+          technicalDescription: "The page lists translation keys, one per row, each with an editable value. Type into a value to change the translation. The rows are generated from a plain set of key-value pairs, so the list adapts to however many translations exist.",
         },
         children: ["rows"],
       },

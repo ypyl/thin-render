@@ -5,8 +5,8 @@
       "type": "CaseContainer",
       "props": {
         "title": "Dynamic Columns Table",
-        "description": "Static spec, runtime-unknown columns — rows repeat /data, cells repeat /colDefs. Switching datasets changes the column set with zero spec regeneration.",
-        "technicalDescription": "Spec\nCaseContainer → StackRow [ActionButton×3] + Table → [THead → Tr (repeat: /colDefs → ColumnHeader), TBody (repeat: /data, key: __id → Tr → repeat: /colDefs → DataCell)]\nState\n{ data: Array<Record> — enriched with __id, colDefs: Array<{ key, label }> — derived at load, dataset: name }\nFeatures\n• Scope stack — DataCell reads the column key from its own repeat scope (usePath()) and binds the value at the row scope (usePath(1))\n• Static spec — column set changes at runtime via /colDefs; no spec regeneration, no full re-render\n• Per-cell subscriptions — editing one cell re-renders only that cell\n• Ragged rows — column union across all rows; missing keys render empty"
+        "description": "A table whose columns are decided at runtime. Switch datasets and the rows and columns change together, without a reload.",
+        "technicalDescription": "The table is defined once, without knowing which columns it will show. Pick a different dataset and the table reads that dataset's fields and builds the matching columns. Cells for fields a row does not have render empty. Editing works the same in every dataset."
       },
       "children": ["controls", "table"]
     },

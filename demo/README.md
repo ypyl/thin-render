@@ -16,24 +16,24 @@ npm run dev    # starts at http://localhost:5173
 
 | Case | What it shows |
 |------|---------------|
-| **Basic** | Static spec → renders a paper card with text. No state, no reactivity. |
-| **Form** | Two `BoundField` inputs bound to `/name` and `/email`. Edit/save/cancel lifecycle via handlers. |
-| **Actions** | `ActionButton` wired to a `saveDoc` handler that writes a timestamp to the store. |
-| **Large (1000)** | 1000 rows × 2 columns via `repeat`. Editing one cell re-renders exactly one `BoundField`. |
-| **Table** | 1000-row HTML `<table>` with `<thead>`/`<tbody>` via `repeat` on `<tr>` elements. |
-| **Switch** | Conditional rendering via named slots — three mutually-exclusive status views. |
-| **Detail Modal** | Click a row → async handler loads detail data into a Modal via `LoadingBox`. |
-| **Two Store** | Two stores, two Renderers side by side — cross-store handler updates preview on Apply. |
-| **Feature Flags** | Dashboard with `ToggleField`, `SliderField`, `SegmentedField`, `Badge`, and `Alert`. |
-| **Translations** | Editable translation strings via `repeat` on a plain object (not an array). |
-| **Drag & Drop** | Sortable table with drag-and-drop reordering, add, remove, and edit/save/cancel. Powered by `@dnd-kit`. |
-| **Mantine Table** | Mantine-styled table with `<Table>` + `<Pagination>` — 300 rows, 10 per page. Pagination state driven by store. |
-| **Dynamic Columns** | Static spec, runtime-unknown columns — rows repeat `/data`, cells repeat `/colDefs`. `DataCell` reads its column key from its own scope and binds the value at the row scope via `usePath(1)`. Switching datasets changes the column set with no spec regeneration. |
-| **Nested Repeat** | Two-level nested `repeat` — categories contain items; the inner repeat resolves `{ $item: "items" }` against the outer scope. |
-| **Named Slots** | Record-form children map slot names to elements — a `Page` places header/sidebar/content/footer at different positions; `repeat` builds per-item slot instances. |
-| **DOCX Export** | Edit data in an interactive table, then export to a downloadable `.docx` via `renderGeneric` with separate React and DOCX specs. |
-| **XLSX Export** | Edit data in a table, then export to a downloadable `.xlsx` via `renderGeneric` with the `xlsx` (SheetJS) package. |
-| **Nested Package** | A self-contained child package (own spec, registry, components) embedded at two base paths of one parent store — `createStoreView` write-back into the parent JSON, `parent.*` bridge actions with child-id payload, and a standalone instance proving parity. |
+| **Basic** | A static greeting card; the page is described as data and nothing is interactive. |
+| **Form** | Editable fields with an edit/save/cancel flow. |
+| **Actions** | A button that records the current time and shows it on the page. |
+| **Large (1000)** | 1,000 editable rows; typing updates only the cell being edited. |
+| **Table** | A 1,000-row HTML table with a header row and editable cells. |
+| **Switch** | One panel that swaps between loading, loaded, and error views. |
+| **Detail Modal** | Click a row to load its details from a simulated server into a popup. |
+| **Two Store** | Settings on the left update a preview on the right only when you click Apply. |
+| **Feature Flags** | A dashboard of feature toggles, rollout sliders, and an environment picker. |
+| **Translations** | Editable translation strings, one key per row. |
+| **Drag & Drop** | Sortable table: drag to reorder, plus add, remove, and edit. |
+| **Mantine Table** | Paginated table, 300 rows with 10 per page. |
+| **Dynamic Columns** | A table whose columns are decided at runtime; switching datasets changes the column set. |
+| **Nested Repeat** | Categories with editable items inside each category. |
+| **Named Slots** | A page layout assembled from named areas, plus cards generated from a list. |
+| **DOCX Export** | Edit data, then export it as a Word document. |
+| **XLSX Export** | Edit data, then export it as a spreadsheet. |
+| **Nested Package** | The same feature embedded twice in one page plus a standalone copy, each with its own data. |
 
 ## Performance verification
 

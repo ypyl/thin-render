@@ -3,7 +3,7 @@
   "elements": {
     "card": {
       "type": "CaseContainer",
-      "props": { "title": "Action Dispatch", "description": "Action dispatch with state feedback — button click saves a timestamp to the store.", "technicalDescription": "Spec\nCaseContainer → StackRow → [EditToggle, ActionButton(\"Save Document\"), BoundField(bind: \"/savedAt\")]\nState\n{} initially; at runtime: savedAt (ISO timestamp), editingSection, _snapshot\nFeatures\n• Action dispatch — on.click triggers handler via emit system\n• setState in handlers — writes to store at arbitrary paths\n• BoundField — one-way display of handler-computed values" },
+      "props": { "title": "Action Dispatch", "description": "A button that records the current time when clicked. The saved timestamp appears next to it.", "technicalDescription": "The page shows a Save Document button and a read-only timestamp. Clicking the button records the current time and displays it right away. The timestamp is part of the page's data, so it survives across clicks." },
       "children": ["body"]
     },
     "body": {

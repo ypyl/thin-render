@@ -9,8 +9,8 @@ export function buildSpec(): Spec {
         type: "CaseContainer",
         props: {
           title: "Mantine Table with Pagination",
-          description: "Mantine-styled table with pagination — 300 rows, 10 per page. Pagination state lives in the store at /page.",
-          technicalDescription: "Spec\nCaseContainer → PaginatedTable(path: /items, pageSize: 10)\nState\n{ items: Array<{ id, name, email }> — 300 rows, page: number }\nFeatures\n• Mantine Table with TableData prop — head/body as data, not spec elements\n• Pagination — Mantine Pagination bound to /page via useSetValue\n• Per-path subscriptions — table subscribes to /items and /page independently\n• Windowed rendering — only 10 rows rendered per page, not full dataset",
+          description: "A paginated table with 300 rows, 10 per page. Click the page numbers to browse.",
+          technicalDescription: "The table holds 300 rows but renders only 10 at a time. The page controls below let you browse through the data, and the current page is remembered in the page's state. Turning the page does not reload the table.",
         },
         children: ["table"],
       },

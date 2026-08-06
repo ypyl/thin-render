@@ -5,8 +5,8 @@
       "type": "CaseContainer",
       "props": {
         "title": "DOCX Export",
-        "description": "Edit data in the table below, then click Download DOCX to export it as a Word document — demonstrates renderGeneric with separate React and DOCX specs sharing one store.",
-        "technicalDescription": "Spec\nReact: CaseContainer → { BoundField(title), Table → [THead → Tr → Th×3, TBody(repeat:/rows) → Tr → [Td → BoundField×3]] }\nDOCX: Document → Section → { Heading($state:/title), DocxTable(repeat:/rows) → TableRow → TableCell → Paragraph($item:field) }\nState\n{ title, rows: [{ id, name, qty, price }], generatedAt }\nFeatures\n• Two specs — React spec for interactive preview, DOCX spec for export, both using the same store\n• renderGeneric — walks the DOCX spec tree, passes raw props + ctx to registry functions\n• Expression resolution in registry — resolve() helper reads $state/$item from store via ctx\n• ctx.basePath scoping — inside repeat, resolve() composes absolute paths from ctx.basePath\n• docx builders — registry maps spec types to Document, Section, Paragraph, Table, TableRow, TableCell\n• Packer.toBlob + browser download — one-click .docx generation"
+        "description": "Edit a small table of data, then click Download DOCX to export it as a Word document.",
+        "technicalDescription": "The page is a data editor: change the title or any cell and the data updates. The Download DOCX button takes the current data and produces a Word document from it, including the title and the full table. The document always mirrors what you see on screen."
       },
       "children": ["titleField", "dataTable"]
     },
