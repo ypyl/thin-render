@@ -24,7 +24,7 @@ demo/README.md, and LLM.md in sync where the public API changes.
       (nothing passes it) and remove its tests in `src/store.test.ts`
       (around line 253). `StoreOptions` is not exported.
 
-- [ ] 4. **Remove `playwright` devDependency** — zero usage anywhere in the
+- [x] 4. **Remove `playwright` devDependency** — zero usage anywhere in the
       repo. Remove from `package.json` devDependencies.
 
 - [ ] 5. **Remove `@mantine/hooks` demo dependency** — zero imports in
