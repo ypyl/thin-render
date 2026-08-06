@@ -203,16 +203,6 @@ export function useEmit(on?: OnMap): (event: string) => Promise<void> | void {
 export type { ActionContextValue };
 
 /**
- * Convenience hook for components to resolve `$item` expressions in props.
- * String → passthrough. `{ $item: "<field>" }` → `${repeatPath}/${field}`.
- * `{ $item: "" }` → repeatPath. Outside repeat → undefined.
- */
-export function useItemPath(expr: unknown): string | undefined {
-  const base = usePath();
-  return resolveRepeatPath(expr, undefined, base);
-}
-
-/**
  * Resolve a repeat.path expression to an absolute store path.
  * - string → passthrough (no subscription)
  * - `{ $item: "<field>" }` → resolved against PathContext (no subscription)

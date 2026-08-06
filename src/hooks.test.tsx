@@ -1,7 +1,7 @@
 // hooks.test.tsx — tests for all exported hooks.
 import { describe, it, expect, vi } from "vitest";
 import { renderHook, act, render } from "@testing-library/react";
-import { useStore, useValue, useSetValue, useBound, useSelector, useEmit, useItemPath, useResolvedPath, usePath, useRepeatIndex } from "./hooks";
+import { useStore, useValue, useSetValue, useBound, useSelector, useEmit, useResolvedPath, usePath, useRepeatIndex } from "./hooks";
 import { createStore } from "./store";
 import { createWrapper } from "./test-utils";
 import { StoreProvider, ActionProvider } from "./contexts";
@@ -357,45 +357,6 @@ describe("useRepeatIndex", () => {
       wrapper: createWrapper({ repeatIndex: 7 }),
     });
     expect(result.current).toBe(7);
-  });
-});
-
-// ── useItemPath ────────────────────────────────────────────────────
-
-describe("useItemPath", () => {
-  it("resolves $item with field to absolute path", () => {
-    const { result } = renderHook(() => useItemPath({ $item: "name" }), {
-      wrapper: createWrapper({ repeatPath: "/items/5" }),
-    });
-    expect(result.current).toBe("/items/5/name");
-  });
-
-  it("resolves $item with empty string to base path", () => {
-    const { result } = renderHook(() => useItemPath({ $item: "" }), {
-      wrapper: createWrapper({ repeatPath: "/items/5" }),
-    });
-    expect(result.current).toBe("/items/5");
-  });
-
-  it("returns undefined for $item outside repeat scope", () => {
-    const { result } = renderHook(() => useItemPath({ $item: "name" }), {
-      wrapper: createWrapper(),
-    });
-    expect(result.current).toBeUndefined();
-  });
-
-  it("passes through plain strings", () => {
-    const { result } = renderHook(() => useItemPath("/foo/bar"), {
-      wrapper: createWrapper(),
-    });
-    expect(result.current).toBe("/foo/bar");
-  });
-
-  it("returns undefined for non-string, non-$item", () => {
-    const { result } = renderHook(() => useItemPath(42), {
-      wrapper: createWrapper(),
-    });
-    expect(result.current).toBeUndefined();
   });
 });
 
