@@ -1,0 +1,43 @@
+{
+  "root": "root",
+  "elements": {
+    "root": {
+      "type": "CaseContainer",
+      "props": {
+        "title": "Nested Package",
+        "description": "One parent store; the same child package embedded at two different base paths, plus a standalone instance with its own store.",
+        "technicalDescription": "Parent spec\nCaseContainer → GridRow(cols 2) → [top embedded, bottom embedded, detail, standalone]\nState\n{ top: { customer: {...} }, bottom: { customer: {...} }, detail: null }\nHow it works\n• createStoreView(store, base) — the child package reads/writes its subtree of the parent store as if it were its own root; no data copies\n• EmbeddedChild — boundary component: view + parent.* bridge + nested <Renderer>\n• Child writes (notes field) land directly in the parent store at the occurrence's base path\n• \"Load details\" fires parent.loadDetail with { id: { $state: \"/id\" } } — params resolved in the child's world, handler executed with the parent's accessors\n• Standalone — own store, same spec/registry; parent.loadDetail implemented locally"
+      },
+      "children": ["panels"]
+    },
+    "panels": {
+      "type": "GridRow",
+      "props": { "cols": { "base": 1, "sm": 2 } },
+      "children": ["topPanel", "bottomPanel", "detailPanel", "standalonePanel"]
+    },
+    "topPanel": {
+      "type": "CaseContainer",
+      "props": { "title": "Embedded at /top/customer" },
+      "children": ["topChild"]
+    },
+    "topChild": { "type": "EmbeddedChild", "props": { "base": "/top/customer" } },
+    "bottomPanel": {
+      "type": "CaseContainer",
+      "props": { "title": "Embedded at /bottom/customer" },
+      "children": ["bottomChild"]
+    },
+    "bottomChild": { "type": "EmbeddedChild", "props": { "base": "/bottom/customer" } },
+    "standalonePanel": {
+      "type": "CaseContainer",
+      "props": { "title": "Standalone (own store)" },
+      "children": ["standaloneChild"]
+    },
+    "standaloneChild": { "type": "StandaloneChild" },
+    "detailPanel": {
+      "type": "CaseContainer",
+      "props": { "title": "Detail (fetched by parent handler)" },
+      "children": ["detailContent"]
+    },
+    "detailContent": { "type": "DetailPanel" }
+  }
+}

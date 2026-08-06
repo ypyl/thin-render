@@ -1,0 +1,31 @@
+{
+  "root": "card",
+  "elements": {
+    "card": {
+      "type": "CaseContainer",
+      "props": {
+        "title": "Customer",
+        "description": "Child package: its own spec, registry, and components."
+      },
+      "children": ["fields"]
+    },
+    "fields": {
+      "type": "StackRow",
+      "props": { "gap": "xs" },
+      "children": ["name", "email", "notes", "actions"]
+    },
+    "name": { "type": "InfoField", "props": { "label": "Name", "bind": "name" } },
+    "email": { "type": "InfoField", "props": { "label": "Email", "bind": "email" } },
+    "notes": { "type": "NotesField", "props": { "label": "Notes", "bind": "notes" } },
+    "actions": {
+      "type": "ActionButton",
+      "props": { "label": "Load details" },
+      "on": {
+        "click": {
+          "action": "parent.loadDetail",
+          "params": { "id": { "$state": "/id" } }
+        }
+      }
+    }
+  }
+}

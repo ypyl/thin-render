@@ -33,6 +33,7 @@ npm run dev    # starts at http://localhost:5173
 | **Named Slots** | Record-form children map slot names to elements — a `Page` places header/sidebar/content/footer at different positions; `repeat` builds per-item slot instances. |
 | **DOCX Export** | Edit data in an interactive table, then export to a downloadable `.docx` via `renderGeneric` with separate React and DOCX specs. |
 | **XLSX Export** | Edit data in a table, then export to a downloadable `.xlsx` via `renderGeneric` with the `xlsx` (SheetJS) package. |
+| **Nested Package** | A self-contained child package (own spec, registry, components) embedded at two base paths of one parent store — `createStoreView` write-back into the parent JSON, `parent.*` bridge actions with child-id payload, and a standalone instance proving parity. |
 
 ## Performance verification
 

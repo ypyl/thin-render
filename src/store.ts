@@ -116,6 +116,31 @@ export interface StoreOptions {
   log?: (...args: unknown[]) => void;
 }
 
+/**
+ * Create a path-prefixed view of an existing store: every path is rebased
+ * onto `basePath`, so a nested spec package can treat a subtree of the
+ * parent store as its own root. No data is copied and no listener registry
+ * is kept — all four methods delegate to the underlying store, so per-path
+ * subscription granularity is preserved (writes outside the base subtree
+ * never notify view subscribers). See specs/store-views/spec.md.
+ */
+export function createStoreView(store: Store, basePath: string): Store {
+  const base = normalizePath(basePath);
+  // Empty path → exactly basePath (never basePath + "/"); leading "/" optional.
+  const join = (path: string) => {
+    const p = normalizePath(path);
+    return p ? `${base}/${p}` : base;
+  };
+  return {
+    get: (path) => store.get(join(path)),
+    set: (path, value) => store.set(join(path), value),
+    subscribe: (path, listener) => store.subscribe(join(path), listener),
+    // Snapshot scoped to the subtree so paths given to get/set/subscribe are
+    // relative to it (useValue reads via getByPath(getState(), path)).
+    getState: () => store.get(base),
+  };
+}
+
 /** Create an in-memory store with per-path subscriptions. */
 export function createStore(
   initial: Record<string, unknown> = {},

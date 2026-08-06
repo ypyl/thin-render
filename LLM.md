@@ -41,7 +41,7 @@ import type { Spec, UIElement, ActionBinding, RepeatConfig, ComponentProps, Hand
 ### Hooks
 
 ```ts
-import { useBound, useValue, useSetValue, useStore, usePath, useSelector, getByPath } from "thin-render";
+import { useBound, useValue, useSetValue, useStore, usePath, useSelector, getByPath, ActionContext } from "thin-render";
 ```
 
 | Hook | Returns | Notes |
@@ -52,6 +52,7 @@ import { useBound, useValue, useSetValue, useStore, usePath, useSelector, getByP
 | `useSetValue(path)` | `(v: unknown) => void` | Write-only |
 | `useStore()` | `Store` | Access `store.get()` / `store.set()` |
 | `usePath(offset?)` | `string` | Current repeat scope base path; `usePath(1)` reads the parent repeat's scope, `undefined` beyond the stack |
+| `ActionContext` | React context | `{ handlers, getState, setState }` of the nearest `ActionProvider` — `useContext` inside a boundary component to bridge parent actions into a nested renderer |
 
 ### Component Contract
 
@@ -87,7 +88,7 @@ type Handler = (
 ### Store API
 
 ```ts
-import { createStore, getByPath } from "thin-render";
+import { createStore, createStoreView, getByPath } from "thin-render";
 const store = createStore({ /* initial state */ });
 ```
 
@@ -99,6 +100,8 @@ const store = createStore({ /* initial state */ });
 | `store.getState()` | Full state snapshot |
 
 `getByPath(state, path)` — standalone utility to read a nested value from any object by path. Used inside handlers: `getByPath(getState(), params.id)`
+
+`createStoreView(store, basePath)` — a path-prefixed view implementing the same `Store` interface: `get`/`set`/`subscribe` rebase the given path onto `basePath` (empty path → `basePath` exactly; leading `/` optional), and `getState()` returns the subtree snapshot at `basePath`. No data is copied and no listener registry is kept — subscriptions delegate, so writes outside the base subtree never notify view subscribers. Used to embed a nested spec package at a subtree of a parent store (see Pattern 10).
 
 Path syntax: JSON-Pointer-like, `/`-separated. Leading `/` optional. `""` = root.
 
@@ -253,6 +256,7 @@ function SlotCard({ slots }: ComponentProps) {
 
 ### 9. Dynamic Columns Table (scope stack)
 
+
 Render `{ data: [{ head1: val1, ... }, ...] }` — records whose keys are only known at runtime — with a **fully static spec**: rows and cells each repeat independently, and a cell resolves its value across the two scopes. Derived columns live in the store:
 
 ```ts
@@ -277,6 +281,41 @@ function DataCell(_props: ComponentProps) {
 ```
 
 Repeat scopes form a stack (innermost first); `usePath(offset)` walks it — `0` is current, `1` is the parent repeat, beyond the stack is `undefined`. The nested `Renderer` boundary resets the stack, so no scope leaks across renderers. `$item`, relative binds, and `$index` still resolve against the innermost scope only. A `DataCell` re-renders only on writes to its own value path; changing `/colDefs` (a new column set) re-renders only the repeats, with no spec regeneration. `renderGeneric` builders get the same stack as `ctx.scopes`. If you cannot add a custom cell component, generate the spec from the columns instead — that remains a valid fallback.
+
+### 10. Nested Spec Package (store view + parent bridge)
+
+Embed a self-contained spec package (own spec, registry, components, handlers) at **multiple places** of a bigger spec sharing **one store**. The child data is a subtree of the parent's JSON (`/widgets/0/data`); the boundary component in the parent registry gives the child a rebased view of the parent store and a bridge to parent handlers:
+
+```tsx
+// EmbeddedChild.tsx — registered in the PARENT registry as "child-renderer"
+import { useContext, useMemo } from "react";
+import { Renderer, createStoreView, useStore, usePath, ActionContext, type ComponentProps, type Handlers } from "thin-render";
+
+function EmbeddedChild({ element }: ComponentProps) {
+  const parentStore = useStore();
+  const parentAction = useContext(ActionContext);   // parent's handlers + accessors
+  const scope = usePath();
+  const base = typeof element.props?.base === "string" ? element.props.base : undefined;
+  const view = useMemo(() => (base ? createStoreView(parentStore, base) : null), [parentStore, base]);
+
+  // parent.<name> → parent handler with the parent's accessors; params (already
+  // resolved in the child's world by the child's emit) pass through untouched
+  const bridge = useMemo<Handlers>(() => {
+    const out: Handlers = {};
+    if (parentAction) {
+      for (const [name, h] of Object.entries(parentAction.handlers)) {
+        out[`parent.${name}`] = (params) => h(params, { getState: parentAction.getState, setState: parentAction.setState });
+      }
+    }
+    return out;
+  }, [parentAction]);
+
+  if (!view) return null;
+  return <Renderer spec={childSpec} registry={childRegistry} store={view} handlers={{ ...childHandlers, ...bridge }} />;
+}
+```
+
+Parent spec: `{ "type": "child-renderer", "props": { "base": "/widgets/0/data" } }`. Child spec fires parent actions with `action: "parent.<name>"` and self-identifies via its data: `params: { id: { $state: "/id" } }`. Write-back is automatic — child `setState` lands in the parent store at the base path. The same spec/registry renders standalone with a plain `createStore` store (no bridge; `parent.*` actions warn as unknown). `base` also accepts `{ $item: "field" }` resolved against the parent scope via `usePath()`. Child-of-child nesting works: the inner boundary sees the outer bridge's names, so `parent.<app-level-name>` resolves at any depth.
 
 ### Minimal App
 

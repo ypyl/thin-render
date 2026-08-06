@@ -19,6 +19,7 @@ import { NestedRepeatCase } from "./cases/nested-repeat/NestedRepeatCase";
 import { NamedSlotsCase } from "./cases/named-slots/NamedSlotsCase";
 import { DocxExportCase } from "./cases/docx-export/DocxExportCase";
 import { XlsxExportCase } from "./cases/xlsx-export/XlsxExportCase";
+import { NestedPackageCase } from "./cases/nested-package/NestedPackageCase";
 
 export function App() {
   return (
@@ -42,6 +43,7 @@ export function App() {
         <Route path="/named-slots" component={NamedSlotsCase} />
         <Route path="/docx-export" component={DocxExportCase} />
         <Route path="/xlsx-export" component={XlsxExportCase} />
+        <Route path="/nested-package" component={NestedPackageCase} />
         <Route>
           <Container py="xl">
             <Title order={3} mb="md">404 — Page not found</Title>

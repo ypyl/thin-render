@@ -105,6 +105,12 @@ const CASES = [
     title: "XLSX Export",
     description: "Edit data in a table, then export to a downloadable .xlsx spreadsheet — demonstrates renderGeneric with the xlsx (SheetJS) package.",
   },
+  {
+    route: "/nested-package",
+    emoji: "🧺",
+    title: "Nested Package",
+    description: "A self-contained child package (own spec, registry, components) embedded at multiple places of a bigger spec sharing one store — store views, write-back, and parent.* bridge actions.",
+  },
 ];
 
 export function HomePage() {

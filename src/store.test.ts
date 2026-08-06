@@ -6,6 +6,7 @@ import {
   immutableSetByPath,
   pathsOverlap,
   createStore,
+  createStoreView,
 } from "./store";
 
 // ── Tests ─────────────────────────────────────────────────────────
@@ -168,6 +169,81 @@ describe("unsubscribe edge cases", () => {
     store.set("/x", 2);
     expect(a).toBe(0);
     expect(b).toBe(1);
+  });
+});
+
+describe("createStoreView", () => {
+  it("get reads through to the base subtree", () => {
+    const store = createStore({ a: { b: { x: 1 } } });
+    const view = createStoreView(store, "/a/b");
+    expect(view.get("/x")).toBe(1);
+  });
+
+  it("set writes through to the base subtree", () => {
+    const store = createStore({ a: { b: {} } });
+    const view = createStoreView(store, "/a/b");
+    view.set("/x", 2);
+    expect(store.get("/a/b/x")).toBe(2);
+  });
+
+  it("empty path addresses the base subtree", () => {
+    const store = createStore({ a: { b: { x: 1 } } });
+    const view = createStoreView(store, "/a/b");
+    expect(view.get("")).toEqual({ x: 1 });
+  });
+
+  it("leading slash is optional", () => {
+    const store = createStore({ a: { b: { x: 1 } } });
+    const view = createStoreView(store, "/a/b");
+    expect(view.get("/x")).toBe(1);
+    expect(view.get("x")).toBe(1);
+  });
+
+  it("getState is subtree-scoped", () => {
+    const store = createStore({ a: { b: { x: 1 }, y: 2 } });
+    const view = createStoreView(store, "/a/b");
+    expect(view.getState()).toEqual({ x: 1 });
+  });
+
+  it("write inside the subtree notifies", () => {
+    const store = createStore({ a: { b: {} }, c: {} });
+    const view = createStoreView(store, "/a/b");
+    let calls = 0;
+    view.subscribe("/x", () => calls++);
+    store.set("/a/b/x", 1);
+    expect(calls).toBe(1);
+  });
+
+  it("write outside the subtree does not notify", () => {
+    const store = createStore({ a: { b: {} }, c: {} });
+    const view = createStoreView(store, "/a/b");
+    let calls = 0;
+    view.subscribe("/x", () => calls++);
+    store.set("/c/x", 1);
+    expect(calls).toBe(0);
+  });
+
+  it("unsubscribe removes the delegated listener", () => {
+    const store = createStore({ a: { b: {} } });
+    const view = createStoreView(store, "/a/b");
+    let calls = 0;
+    const unsub = view.subscribe("/x", () => calls++);
+    unsub();
+    store.set("/a/b/x", 1);
+    expect(calls).toBe(0);
+  });
+
+  it("set on missing base creates structure", () => {
+    const store = createStore();
+    const view = createStoreView(store, "/a/b");
+    view.set("/x", 1);
+    expect(store.get("/a/b/x")).toBe(1);
+  });
+
+  it("view of view reads through both prefixes", () => {
+    const store = createStore({ a: { b: { x: 5 } } });
+    const view = createStoreView(createStoreView(store, "/a"), "/b");
+    expect(view.get("/x")).toBe(5);
   });
 });
 

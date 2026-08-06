@@ -167,6 +167,17 @@ function Page({ slots }: ComponentProps) {
 
 Exactly one of `children`/`slots` is passed to a component, based on the children shape: array form → `children`, record form → `slots`. With `repeat` + record form, one component instance is created **per item**, each with its own slots scoped to the item's path. Slot names are never used as React keys (element keys are); do not reference the same child element id from two slots of the same element.
 
+### Nested spec packages (store views)
+
+A self-contained spec package (its own spec, registry, components, handlers) can be embedded inside a bigger spec at **multiple places** while sharing one store. The composition point is a boundary component registered in the parent registry:
+
+1. **Resolve the occurrence's base path** from element props — a plain string (`"/widgets/0/data"`) or `{ $item: "field" }` relative to the parent's repeat scope via `usePath()`.
+2. **Wrap the parent store** — `createStoreView(useStore(), base)` implements the `Store` interface with every path rebased onto `base`, so the child spec reads/writes its subtree as its own root. Writes land directly in the parent store (write-back with zero bridges); subscriptions delegate, so granularity is preserved.
+3. **Bridge parent actions** — capture the parent's `ActionContext` via `useContext` (the boundary sits inside the parent's `ActionProvider`) and expose each parent handler under a `parent.<name>` namespace in the nested renderer's `handlers`. Params resolved in the child's world (child-scoped `$state` values) pass through untouched; the handler runs with the parent's accessors.
+4. **Render** — a nested `<Renderer>` with the child's spec, registry, and the merged handler map (`{ ...childHandlers, ...bridge }`). The nested renderer already resets repeat scope and mounts fresh providers, so the child world is cleanly isolated.
+
+The child spec fires parent actions with `action: "parent.<name>"` and self-identifies via its data (`params: { id: { $state: "/id" } }`). The same spec/registry renders standalone with a plain `createStore` store — only the store wiring differs (see the **Nested Package** demo case).
+
 ## API
 
 ### `<Renderer>`
@@ -192,6 +203,7 @@ Exactly one of `children`/`slots` is passed to a component, based on the childre
 | `useSelector<T>(path, derive)` | `T` | Subscribe to a **derived** value within a path window; re-renders only when the derived value changes |
 | `useSetValue(path)` | `(v: unknown) => void` | Write-only setter for a path |
 | `useStore()` | `Store` | The stable store; throws without a provider |
+| `ActionContext` | React context | `{ handlers, getState, setState }` of the nearest `ActionProvider` — read via `useContext` inside boundary components to bridge parent actions into a nested renderer |
 | `usePath(offset?)` | `string` | Current repeat scope's base path; `usePath(1)` returns the parent scope, `undefined` beyond the stack |
 
 ### Store & utilities
@@ -201,6 +213,7 @@ Exactly one of `children`/`slots` is passed to a component, based on the childre
 | Export | Signature | Description |
 |--------|-----------|-------------|
 | `createStore(initial?)` | `Store` | Create a path-based external store |
+| `createStoreView(store, basePath)` | `Store` | A path-prefixed **view** of a store: every path is rebased onto `basePath`, so a nested spec can treat a subtree as its own root — no data copies, subscriptions delegate with granularity preserved |
 | `getByPath(state, path)` | `unknown` | Read a nested value from an object by path string |
 
 `Store` instance methods:
@@ -298,7 +311,7 @@ interface ActionBinding {
 
 ## Demo
 
-The demo app (`demo/`) has seventeen self-contained cases:
+The demo app (`demo/`) has eighteen self-contained cases:
 
 | Case | What it shows | Source |
 |-----|---------------|--------|
@@ -319,6 +332,7 @@ The demo app (`demo/`) has seventeen self-contained cases:
 | **Named Slots** | Record-form children map slot names to elements — a `Page` places header/sidebar/content/footer at different positions; `repeat` builds per-item slot instances | [`NamedSlotsCase.tsx`](./demo/src/cases/named-slots/NamedSlotsCase.tsx) · [`spec.json`](./demo/src/cases/named-slots/spec.json) · [`registry.tsx`](./demo/src/cases/named-slots/registry.tsx) |
 | **DOCX Export** | Edit data in a table, then export to a downloadable `.docx` — `renderGeneric` with separate React and DOCX specs and registry-side expression resolution | [`DocxExportCase.tsx`](./demo/src/cases/docx-export/DocxExportCase.tsx) · [`spec.json`](./demo/src/cases/docx-export/spec.json) · [`docxSpec.ts`](./demo/src/cases/docx-export/docxSpec.ts) · [`docxRegistry.ts`](./demo/src/cases/docx-export/docxRegistry.ts) · [`registry.ts`](./demo/src/cases/docx-export/registry.ts) |
 | **XLSX Export** | Edit data in a table, then export to a downloadable `.xlsx` via `renderGeneric` with the `xlsx` (SheetJS) package | [`XlsxExportCase.tsx`](./demo/src/cases/xlsx-export/XlsxExportCase.tsx) · [`spec.json`](./demo/src/cases/xlsx-export/spec.json) · [`xlsxSpec.ts`](./demo/src/cases/xlsx-export/xlsxSpec.ts) · [`xlsxRegistry.ts`](./demo/src/cases/xlsx-export/xlsxRegistry.ts) · [`registry.ts`](./demo/src/cases/xlsx-export/registry.ts) |
+| **Nested Package** | A child package (own spec, registry, components) embedded at two base paths of one parent store — `createStoreView` write-back, `parent.*` bridge actions, and a standalone instance proving parity | [`NestedPackageCase.tsx`](./demo/src/cases/nested-package/NestedPackageCase.tsx) · [`spec.json`](./demo/src/cases/nested-package/spec.json) · [`handlers.ts`](./demo/src/cases/nested-package/handlers.ts) · [`registry.ts`](./demo/src/cases/nested-package/registry.ts) · [`child/EmbeddedChild.tsx`](./demo/src/cases/nested-package/child/EmbeddedChild.tsx) · [`child/spec.json`](./demo/src/cases/nested-package/child/spec.json) · [`child/registry.ts`](./demo/src/cases/nested-package/child/registry.ts) · [`child/StandaloneChild.tsx`](./demo/src/cases/nested-package/child/StandaloneChild.tsx) |
 
 ## Q&A
 
