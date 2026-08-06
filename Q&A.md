@@ -87,12 +87,13 @@ A registry maps spec `type` strings to React components. Each component receives
 ```ts
 interface ComponentProps {
   element: UIElement;               // current spec element (type, props, children, on, repeat)
-  children?: ReactNode;             // pre-rendered child elements
+  children?: ReactNode;             // pre-rendered children (array-form children only)
+  slots?: Record<string, ReactNode>;// pre-rendered named slots (record-form children only)
   emit: (event: string) => void;    // dispatch actions declared in element.on
 }
 ```
 
-Every registry component receives these three props. `element.props` is `Record<string, unknown>` — cast to the types you expect. `children` are already rendered by the renderer — just place them in your JSX. `emit("click")` fires whatever action the spec bound to `on.click`.
+Every registry component receives these four props. Exactly one of `children`/`slots` is set, based on the element's `children` shape: `["a", "b"]` → `children`; `{ "header": "h" }` → `slots`. `element.props` is `Record<string, unknown>` — cast to the types you expect. `children` are already rendered by the renderer — just place them in your JSX. `emit("click")` fires whatever action the spec bound to `on.click`.
 
 ### What's the Spec structure?
 
@@ -105,7 +106,7 @@ interface Spec {
 interface UIElement {
   type: string;                          // matches a key in your registry
   props?: Record<string, unknown>;       // passed to your component as element.props
-  children?: string[];                   // keys of child elements to render
+  children?: string[] | SlotMap;         // ordered child keys OR named slots
   on?: Record<string, ActionBinding | ActionBinding[]>;    // event → action bindings
   repeat?: { path: string | { $item: string } | { $state: string }; key?: string };
 }
@@ -116,7 +117,7 @@ interface ActionBinding {
 }
 ```
 
-Specs are JSON — you write them as `.json` files or build them programmatically. The `type` field links each element to a component in your registry. `children` reference other element keys by name. `on` wires actions to handlers. `repeat` drives array/object iteration.
+Specs are JSON — you write them as `.json` files or build them programmatically. The `type` field links each element to a component in your registry. `children` reference other element keys by name: array form declares ordered children; record form (a `SlotMap`) maps slot names to child ids (or arrays of ids) that the component renders at positions of its choosing. `on` wires actions to handlers. `repeat` drives array/object iteration.
 
 ## Expressions
 
@@ -212,11 +213,25 @@ In short: `$state` answers "what value?", `$item` answers "what path?", `$index`
 `renderGeneric` is a pure function that walks a spec tree and calls your builder functions instead of React components. Use it for one-shot, non-interactive output — DOCX reports, PDF invoices, CSV exports, plain text, or any format.
 
 ```ts
-import { renderGeneric, type GenericRegistry } from "thin-render";
+import { renderGeneric, getByPath, type GenericRegistry, type RenderContext } from "thin-render";
+
+/** Resolve a prop that may be an expression object ($state, $item, $index). */
+function resolve(value: unknown, ctx: RenderContext): unknown {
+  if (value !== null && typeof value === "object" && !Array.isArray(value)) {
+    const obj = value as Record<string, unknown>;
+    if (typeof obj.$state === "string") return getByPath(ctx.store.getState(), obj.$state);
+    if (typeof obj.$item === "string") {
+      const p = obj.$item === "" ? ctx.basePath : `${ctx.basePath}/${obj.$item}`;
+      return getByPath(ctx.store.getState(), p);
+    }
+    if ("$index" in obj) return (obj.$index as boolean) ? ctx.index : undefined;
+  }
+  return value;
+}
 
 const registry: GenericRegistry = {
-  Paragraph: (props, children) => new Paragraph({ children }),
-  Heading:   (props, _children) => new Paragraph({ text: String(props.text), heading: "HEADING_1" }),
+  Paragraph: (props, children, ctx) => new Paragraph({ children }),
+  Heading:   (props, _children, ctx) => new Paragraph({ text: String(resolve(props.text, ctx)), heading: "HEADING_1" }),
 };
 ```
 
@@ -225,7 +240,7 @@ const registry: GenericRegistry = {
 | | React `<Renderer>` | `renderGeneric` |
 |---|---|---|
 | **Output** | React component tree | Whatever your registry returns |
-| **Expression resolution** | Components use hooks (`useBound`, `useValue`) | Props resolved automatically before registry call |
+| **Expression resolution** | Components use hooks (`useBound`, `useValue`) | Builders resolve manually via `ctx` (props are passed raw) |
 | **Subscriptions** | `useSyncExternalStore` per path | Read-once from store at generation time |
 | **Actions (`on`)** | `emit` dispatches handlers | Ignored — no interactivity |
 | **Repeat** | React reconciliation | Plain loop, pushes results to array |
@@ -235,15 +250,16 @@ const registry: GenericRegistry = {
 
 ### What goes in a `GenericRegistry`?
 
-Each entry is a function `(props, children) => unknown`:
+Each entry is a function `(props, children, ctx) => unknown`:
 
-- `props` — the element's `props` with all `$state`/`$item`/`$index` expressions already resolved to plain values. No expression objects reach your function.
+- `props` — the element's `props` passed **raw**: `$state`/`$item`/`$index` expression objects reach your function unresolved. Resolve them with `ctx` (see the `resolve` helper above) — the renderer never resolves props.
 - `children` — a flat array of whatever your child registry functions returned.
+- `ctx` — the `RenderContext`: `{ store, basePath, scopes, index, slots? }` for reading values and repeat scope. Inside a repeat, `basePath` is the item's path (e.g. `/rows/0`) and `index` its position.
 
 ```ts
 const registry: GenericRegistry = {
-  // Leaf: no children
-  TextRun: (props) => new TextRun({ text: String(props.text) }),
+  // Leaf: no children; resolve $state/$item manually via ctx
+  TextRun: (props, _children, ctx) => new TextRun({ text: String(resolve(props.text, ctx)) }),
   // Container: receives children array from child elements
   Paragraph: (_props, children) => new Paragraph({ children }),
   // Repeat container: children are flattened results of all iterations
@@ -318,7 +334,7 @@ function MyButton({ element, emit }: ComponentProps) {
 
 When the button is clicked:
 1. `emit("click")` looks up `on.click` in the element's spec
-2. `resolveParams` resolves any `$state`/`$item`/`$index` expressions in `params`
+2. The renderer resolves any `$state`/`$item`/`$index` expressions in `params`
 3. The handler is invoked with resolved params + `{ getState, setState }`
 
 `emit` is memoized per element — it's stable as long as the `on` map doesn't change. The event name can be anything: `"click"`, `"change"`, `"submit"`, etc.
@@ -343,7 +359,7 @@ Via the `params` field in the action binding. Values can be static or expression
 }
 ```
 
-At dispatch time, `resolveParams` walks the params object:
+At dispatch time, param resolution walks the params object:
 - `{ $state: "/path" }` → reads the store value at that path (snapshot)
 - `{ $item: "field" }` → resolves to an absolute path relative to the repeat scope
 - `{ $index: true }` → numeric repeat index

@@ -1,6 +1,6 @@
 # thin-render
 
-A ~1,050-line spec-driven renderer with **granular per-path re-renders** for React components and a zero-dependency generic renderer for non-React targets (DOCX, PDF, CSV, etc.). Edit one cell in a 1000-row table — only that one cell's component re-renders.
+A ~1,250-line spec-driven renderer with **granular per-path re-renders** for React components and a zero-dependency generic renderer for non-React targets (DOCX, PDF, CSV, etc.). Edit one cell in a 1000-row table — only that one cell's component re-renders.
 
 Built as a minimal alternative to `@json-render/react`, dropping AI streaming, Zod validation, directives, devtools, and multi-framework output. Just the rendering core, a path-based store, an action system, and a generic renderer for non-React output.
 
@@ -228,16 +228,31 @@ The child spec fires parent actions with `action: "parent.<name>"` and self-iden
 
 > Source: [`renderer-generic.ts`](./src/renderer-generic.ts)
 
-A pure function that walks a spec tree, resolves `$state`/`$item`/`$index` in props, and calls user-provided builder functions — no React, no subscriptions, no JSX. Use it to generate DOCX, PDF, CSV, plain strings, or any format from the same spec schema and store.
+A pure function that walks a spec tree and calls user-provided builder functions — no React, no subscriptions, no JSX. Use it to generate DOCX, PDF, CSV, plain strings, or any format from the same spec schema and store. Props are passed to builders **raw**; expression objects (`$state`/`$item`/`$index`) are resolved by the builder itself using the `ctx` argument (`store`, `basePath`, `scopes`, `index`) — exactly like React components resolve expressions via hooks.
 
 | Export | Signature | Description |
 |--------|-----------|-------------|
-| `renderGeneric(spec, store, registry)` | `unknown` | Walk the spec, resolve expressions, call registry builders |
+| `renderGeneric(spec, store, registry)` | `unknown` | Walk the spec, call registry builders (repeat iteration included) |
 | `GenericRegistry` | `Record<string, (props, children, ctx) => unknown>` | Map of spec type → builder function |
+| `RenderContext` | `{ store, basePath, scopes, index, slots? }` | Context passed to every builder for manual expression resolution |
 
 ```ts
-import { renderGeneric, createStore, type Spec, type GenericRegistry } from "thin-render";
-import { Document, Paragraph, TextRun, Packer } from "docx";
+import { renderGeneric, createStore, getByPath, type Spec, type GenericRegistry, type RenderContext } from "thin-render";
+import { Document, Paragraph, Packer } from "docx";
+
+/** Resolve a prop that may be an expression object ($state, $item, $index). */
+function resolve(value: unknown, ctx: RenderContext): unknown {
+  if (value !== null && typeof value === "object" && !Array.isArray(value)) {
+    const obj = value as Record<string, unknown>;
+    if (typeof obj.$state === "string") return getByPath(ctx.store.getState(), obj.$state);
+    if (typeof obj.$item === "string") {
+      const p = obj.$item === "" ? ctx.basePath : `${ctx.basePath}/${obj.$item}`;
+      return getByPath(ctx.store.getState(), p);
+    }
+    if ("$index" in obj) return (obj.$index as boolean) ? ctx.index : undefined;
+  }
+  return value;
+}
 
 const store = createStore({ title: "Report", rows: [{ name: "Widget", qty: 42 }] });
 
@@ -257,17 +272,17 @@ const spec: Spec = {
 const registry: GenericRegistry = {
   Document: (_p, children) => new Document({ sections: children }),
   Section:  (_p, children) => ({ children }),
-  Heading:  (props) => new Paragraph({ text: String(props.text) }),
+  Heading:  (props, _children, ctx) => new Paragraph({ text: String(resolve(props.text, ctx)) }),
   Table:    (_p, children) => new Table({ rows: children }),
   Row:      (_p, children) => new TableRow({ children }),
-  Cell:     (props) => new TableCell({ children: [new Paragraph(String(props.text))] }),
+  Cell:     (props, _children, ctx) => new TableCell({ children: [new Paragraph(String(resolve(props.text, ctx)))] }),
 };
 
 const doc = renderGeneric(spec, store, registry) as Document;
 const blob = await Packer.toBlob(doc);
 ```
 
-Registry functions receive resolved props (all `$state`/`$item`/`$index` already resolved to plain values) and rendered children as a flat array. For record-form children (named slots), `children` is `[]` and `ctx.slots` holds one entry per slot name (each an array of that slot's rendered results). The renderer handles repeat iteration, expression resolution, and tree walking — your registry just builds the output objects.
+Builders receive raw props and rendered children as a flat array. For record-form children (named slots), `children` is `[]` and `ctx.slots` holds one entry per slot name (each an array of that slot's rendered results). The renderer handles repeat iteration and tree walking; your registry resolves expressions via `ctx` and builds the output objects.
 
 ### Component contract (`ComponentProps`)
 
@@ -299,7 +314,7 @@ interface UIElement {
   props?: Record<string, unknown>;
   children?: string[] | SlotMap;  // ordered children or named slots
   on?: Record<string, ActionBinding | ActionBinding[]>;
-  repeat?: { path: string; key?: string };
+  repeat?: RepeatConfig;  // path: string | { $item: string } | { $state: string }; key?: string
 }
 
 interface ActionBinding {

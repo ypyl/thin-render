@@ -38,7 +38,7 @@ npm run dev    # starts at http://localhost:5173
 ## Performance verification
 
 1. Open **React DevTools Profiler**.
-2. Switch to the **Large (1000)** tab.
+2. Open the **Large (1000)** case.
 3. Start profiling, type in one cell, stop.
 4. The flamegraph shows **one** `BoundField` re-render — not 1000.
 5. The `RepeatChildren` container re-runs its `.map` (cheap), but `ElementRenderer` wrappers skip (memo'd with stable props).

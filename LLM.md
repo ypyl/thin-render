@@ -25,7 +25,7 @@ A demo case typically has 3–4 files: `spec.json`, `registry.ts`, `handlers.ts`
 ### Types
 
 ```ts
-import type { Spec, UIElement, ActionBinding, RepeatConfig, ComponentProps, Handler, Handlers, Registry } from "thin-render";
+import type { Spec, UIElement, SlotMap, ComponentProps, Handler, Handlers, Registry } from "thin-render";
 ```
 
 | Type | Shape |
@@ -33,10 +33,9 @@ import type { Spec, UIElement, ActionBinding, RepeatConfig, ComponentProps, Hand
 | `Spec` | `{ root: string; elements: Record<string, UIElement> }` |
 | `UIElement` | `{ type: string; props?: Record<string, unknown>; children?: string[] \| SlotMap; on?: OnMap; repeat?: RepeatConfig }` |
 | `SlotMap` | `Record<string, string \| string[]>` — slot name → child element id(s); record-form `children` |
-| `ActionBinding` | `{ action: string; params?: Record<string, unknown> }` |
-| `OnMap` | `Record<string, ActionBinding \| ActionBinding[]>` |
-| `WatchMap` | `Record<string, ActionBinding[]>` |
-| `RepeatConfig` | `{ path: string \| { $item: string } \| { $state: string }; key?: string }` |
+| `ActionBinding` | `{ action: string; params?: Record<string, unknown> }` — internal type (not re-exported) |
+| `OnMap` | `Record<string, ActionBinding \| ActionBinding[]>` — internal type (not re-exported) |
+| `RepeatConfig` | `{ path: string \| { $item: string } \| { $state: string }; key?: string }` — internal type (not re-exported) |
 
 ### Hooks
 
@@ -104,6 +103,43 @@ const store = createStore({ /* initial state */ });
 `createStoreView(store, basePath)` — a path-prefixed view implementing the same `Store` interface: `get`/`set`/`subscribe` rebase the given path onto `basePath` (empty path → `basePath` exactly; leading `/` optional), and `getState()` returns the subtree snapshot at `basePath`. No data is copied and no listener registry is kept — subscriptions delegate, so writes outside the base subtree never notify view subscribers. Used to embed a nested spec package at a subtree of a parent store (see Pattern 10).
 
 Path syntax: JSON-Pointer-like, `/`-separated. Leading `/` optional. `""` = root.
+
+### Generic Renderer
+
+```ts
+import { renderGeneric, getByPath, type GenericRegistry, type RenderContext } from "thin-render";
+```
+
+| Export | Signature | Notes |
+|--------|-----------|-------|
+| `renderGeneric(spec, store, registry)` | `unknown` | Walk the spec tree, call builder functions; no React, no subscriptions |
+| `GenericRegistry` | `Record<string, (props, children, ctx) => unknown>` | Map of spec type → builder function |
+| `RenderContext` | `{ store; basePath; scopes; index?; slots? }` | Passed to every builder |
+
+`renderGeneric` passes element `props` to builders **RAW** — `$state`/`$item`/`$index` expression objects are NOT resolved by the renderer. Builders resolve them manually against `ctx` (like React components resolve via hooks):
+
+```ts
+// Resolve a prop that may be an expression object.
+function resolve(value: unknown, ctx: RenderContext): unknown {
+  if (value !== null && typeof value === "object" && !Array.isArray(value)) {
+    const obj = value as Record<string, unknown>;
+    if (typeof obj.$state === "string") return getByPath(ctx.store.getState(), obj.$state);
+    if (typeof obj.$item === "string") {
+      const p = obj.$item === "" ? ctx.basePath : `${ctx.basePath}/${obj.$item}`;
+      return getByPath(ctx.store.getState(), p);
+    }
+    if ("$index" in obj) return (obj.$index as boolean) ? ctx.index : undefined;
+  }
+  return value;
+}
+
+const registry: GenericRegistry = {
+  Heading: (props, _children, ctx) => new Paragraph({ text: String(resolve(props.text, ctx)) }),
+  Table: (_props, children) => new Table({ rows: children }),
+};
+```
+
+`children` is a flat array of child results; for record-form children it is `[]` and `ctx.slots` holds one array per slot name. The renderer handles repeat iteration (array and object), scope stack (`ctx.scopes`, innermost first), and warnings for missing elements/types — your registry just builds the output objects. `renderGeneric` is also exported from README's API section; see the DOCX/XLSX demo cases for full examples.
 
 ## Expression Matrix
 
