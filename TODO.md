@@ -30,7 +30,7 @@ demo/README.md, and LLM.md in sync where the public API changes.
 - [x] 5. **Remove `@mantine/hooks` demo dependency** — zero imports in
       `demo/src`. Remove from `demo/package.json` dependencies.
 
-- [ ] 6. **Remove `Renderer` `loading` prop** — documented in README
+- [x] 6. **Remove `Renderer` `loading` prop** — documented in README
       (line 193) and tested, but no demo passes it; vestigial from the
       removed watch/streaming feature. **BREAKING**: remove the prop from
       `RendererProps` in `src/renderer.tsx`, update the README API table,
