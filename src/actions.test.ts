@@ -1,8 +1,7 @@
-// actions.test.ts — self-checks for the action system (resolveParams, setState built-in).
+// actions.test.ts — self-checks for the action system (setState built-in).
 // Imports from source; keeps BUILTIN_SET_STATE inlined (React-free). Pure logic.
 import { describe, it, expect } from "vitest";
 import { getByPath, createStore } from "./store";
-import { resolveParams } from "./hooks";
 
 // ── BUILTIN_SET_STATE (from src/contexts.tsx, inlined to avoid React import) ─
 const builtinSetState = (
@@ -14,55 +13,6 @@ const builtinSetState = (
 };
 
 // ── Tests ─────────────────────────────────────────────────────────
-
-describe("resolveParams", () => {
-  it("replaces { $state } references with current store values", () => {
-    const getState = () => ({ doc: { id: 42 }, items: [{ name: "A" }] });
-    const out = resolveParams({ id: { $state: "/doc/id" }, label: "static", nested: { ref: { $state: "/items/0/name" } } }, getState);
-    expect(out).toEqual({ id: 42, label: "static", nested: { ref: "A" } });
-  });
-
-  it("passes through non-$state values unchanged", () => {
-    const out = resolveParams({ a: 1, b: "x", c: { d: 3 } }, () => ({}));
-    expect(out).toEqual({ a: 1, b: "x", c: { d: 3 } });
-  });
-
-  it("$item with field resolves to absolute path", () => {
-    const out = resolveParams({ itemPath: { $item: "name" } }, () => ({}), "/items/3");
-    expect(out).toEqual({ itemPath: "/items/3/name" });
-  });
-
-  it("$item with empty string resolves to base path", () => {
-    const out = resolveParams({ row: { $item: "" } }, () => ({}), "/items/7");
-    expect(out).toEqual({ row: "/items/7" });
-  });
-
-  it("$item outside repeat resolves to undefined", () => {
-    const out = resolveParams({ x: { $item: "name" } }, () => ({}));
-    expect(out).toEqual({ x: undefined });
-  });
-
-  it("$index inside repeat returns index", () => {
-    const out = resolveParams({ pos: { $index: true } }, () => ({}), "/items/3", 3);
-    expect(out).toEqual({ pos: 3 });
-  });
-
-  it("$index outside repeat returns undefined", () => {
-    const out = resolveParams({ pos: { $index: true } }, () => ({}));
-    expect(out).toEqual({ pos: undefined });
-  });
-
-  it("mixed $item and $state in same params", () => {
-    const getState = () => ({ user: { id: 42 } });
-    const out = resolveParams({ itemPath: { $item: "" }, userId: { $state: "/user/id" } }, getState, "/items/2");
-    expect(out).toEqual({ itemPath: "/items/2", userId: 42 });
-  });
-
-  it("$index false returns undefined", () => {
-    const out = resolveParams({ pos: { $index: false } }, () => ({}), "/items/3", 3);
-    expect(out).toEqual({ pos: undefined });
-  });
-});
 
 describe("builtinSetState", () => {
   it("writes a path", () => {

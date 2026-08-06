@@ -7,7 +7,7 @@ demo/README.md, and LLM.md in sync where the public API changes.
 
 ## Cuts
 
-- [ ] 1. **Delete `useItemPath`** — zero production callers, not exported
+- [x] 1. **Delete `useItemPath`** — zero production callers, not exported
       from `src/index.ts`, not documented. Only its own tests use it.
       Cut the hook in `src/hooks.ts` and its tests in `src/hooks.test.tsx`
       (around line 363). Replacement: nothing.

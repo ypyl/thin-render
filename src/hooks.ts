@@ -136,17 +136,6 @@ export function useSelector<T>(path: string, derive: (value: unknown) => T): T {
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot) as T;
 }
 
-/** Resolve `{ $state: "<path>" }` references in action params at dispatch time. Recurses into nested objects.
- * Also resolves `{ $item: "<field>" }` to `${basePath}/${field}` and `{ $index: boolean }` to the numeric index. */
-export function resolveParams(
-  params: Record<string, unknown>,
-  getState: () => unknown,
-  repeatBasePath?: string,
-  repeatIndex?: string | number,
-): Record<string, unknown> {
-  return resolveExpressions(params, getState, repeatBasePath, repeatIndex);
-}
-
 /**
  * Build a stable `emit(event)` closure dispatching the element's action
  * bindings. `emit` reads state on-demand (never subscribes) and invokes
@@ -188,7 +177,7 @@ export function useEmit(on?: OnMap): (event: string) => Promise<void> | void {
           continue;
         }
         const resolved = b.params
-          ? resolveParams(b.params, ctx.getState, repeatPath, repeatIdx)
+          ? resolveExpressions(b.params, ctx.getState, repeatPath, repeatIdx)
           : {};
         await handler(resolved, {
           getState: ctx.getState,
