@@ -12,7 +12,7 @@ demo/README.md, and LLM.md in sync where the public API changes.
       Cut the hook in `src/hooks.ts` and its tests in `src/hooks.test.tsx`
       (around line 363). Replacement: nothing.
 
-- [ ] 2. **Delete `resolveParams`** — a one-line delegate to
+- [x] 2. **Delete `resolveParams`** — a one-line delegate to
       `resolveExpressions` with a single production caller (`useEmit` in
       `src/hooks.ts`). Call `resolveExpressions` directly in `useEmit` and
       remove the `resolveParams` tests in `src/actions.test.ts`. Not

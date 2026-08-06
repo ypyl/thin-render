@@ -108,14 +108,6 @@ export interface Store {
   getState: () => unknown;
 }
 
-/** Options for {@link createStore}. */
-export interface StoreOptions {
-  /** Log every `set()` call to the console. */
-  debug?: boolean;
-  /** Custom logger. Defaults to `console.log`. */
-  log?: (...args: unknown[]) => void;
-}
-
 /**
  * Create a path-prefixed view of an existing store: every path is rebased
  * onto `basePath`, so a nested spec package can treat a subtree of the
@@ -144,11 +136,9 @@ export function createStoreView(store: Store, basePath: string): Store {
 /** Create an in-memory store with per-path subscriptions. */
 export function createStore(
   initial: Record<string, unknown> = {},
-  options: StoreOptions = {},
 ): Store {
   let state: unknown = { ...initial };
   const listeners = new Map<string, Set<Listener>>();
-  const { debug = false, log = console.log } = options;
 
   function notify(affected: string) {
     for (const [subscribedPath, set] of listeners) {
@@ -166,7 +156,6 @@ export function createStore(
     set(path: string, value: unknown) {
       const prev = getByPath(state, path);
       if (prev === value) return;
-      if (debug) log(`[store] ${path}:`, prev, "→", value);
       state = immutableSetByPath(state, path, value);
       notify(path);
     },

@@ -246,27 +246,3 @@ describe("createStoreView", () => {
     expect(view.get("/x")).toBe(5);
   });
 });
-
-describe("debug mode", () => {
-  it("logs set calls when debug is enabled", () => {
-    const logs: unknown[][] = [];
-    const store = createStore({ x: 1 }, { debug: true, log: (...args) => logs.push(args) });
-    store.set("/x", 2);
-    expect(logs).toHaveLength(1);
-    expect(logs[0]).toEqual(["[store] /x:", 1, "→", 2]);
-  });
-
-  it("does not log when debug is disabled (default)", () => {
-    const logs: unknown[][] = [];
-    const store = createStore({ x: 1 }, { log: (...args) => logs.push(args) });
-    store.set("/x", 2);
-    expect(logs).toHaveLength(0);
-  });
-
-  it("does not log no-op sets", () => {
-    const logs: unknown[][] = [];
-    const store = createStore({ x: 1 }, { debug: true, log: (...args) => logs.push(args) });
-    store.set("/x", 1); // same value
-    expect(logs).toHaveLength(0);
-  });
-});
