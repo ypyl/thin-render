@@ -17,7 +17,7 @@ A `ButtonGroup` component SHALL exist as a registry component that renders child
 - **THEN** the single button renders normally inside the group wrapper with no visual breakage
 
 ### Requirement: Switch demo uses ButtonGroup for status buttons
-The Switch demo spec SHALL use `type: "ButtonGroup"` for the `buttons` element (replacing `type: "Row"`) so the three status toggle buttons render as a connected segmented control.
+The Switch demo spec SHALL use `type: "ButtonGroup"` for the `buttons` element so the three status toggle buttons render as a connected segmented control.
 
 #### Scenario: Switch demo buttons are visually grouped
 - **WHEN** the Switch demo renders

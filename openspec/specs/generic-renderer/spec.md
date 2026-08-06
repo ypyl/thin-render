@@ -1,6 +1,6 @@
 ## Purpose
 
-Provides a pure, zero-dependency function that walks a spec tree, resolves expressions against a store, and calls user-provided registry functions to produce output of any type — without React, subscriptions, or DOM involvement.
+Provides a pure, zero-dependency function that walks a spec tree and calls user-provided registry functions to produce output of any type — without React, subscriptions, or DOM involvement. Expression resolution is left to the registry functions, which receive the store and repeat scope via context.
 
 ## Requirements
 
@@ -23,54 +23,24 @@ The library SHALL export a `renderGeneric` function accepting `(spec, store, reg
 - **WHEN** `spec` is `null`
 - **THEN** `renderGeneric` returns `null` and does not throw
 
-### Requirement: Element props have expressions resolved before registry call
+### Requirement: Element props are passed raw to registry functions
+The library SHALL pass element `props` to registry functions RAW — `$state`, `$item`, and `$index` expression objects SHALL NOT be resolved by the renderer. The `ctx` argument SHALL carry the `store`, `basePath`, `scopes` (repeat scope stack, innermost first), and `index`, so registry functions can resolve expressions themselves, exactly like React components resolve expressions via hooks. Plain values (strings, numbers, booleans, arrays) SHALL pass through unchanged.
 
-The library SHALL resolve `$state`, `$item`, and `$index` expression objects in element `props` before passing them to the registry function. Resolution SHALL occur recursively into nested objects and SHALL read from the store at generation time (read-once, never subscribed). Plain values (strings, numbers, booleans, arrays) SHALL pass through unchanged.
-
-#### Scenario: $state expression resolved from store
-
+#### Scenario: $state expression passed through raw
 - **WHEN** an element has `props: { text: { $state: "/title" } }` and `store.get("/title")` returns `"Report"`
-- **THEN** the registry function receives `props.text === "Report"`
+- **THEN** the registry function receives `props.text` as the expression object `{ $state: "/title" }` unchanged, and can resolve it via `ctx.store`
 
-#### Scenario: $state path not found resolves to undefined
-
-- **WHEN** an element has `props: { text: { $state: "/missing" } }` and no value exists at that path
-- **THEN** the registry function receives `props.text === undefined`
-
-#### Scenario: $item expression resolved against repeat scope
-
-- **WHEN** inside a repeat at `/items/2`, an element has `props: { label: { $item: "name" } }` and `store.get("/items/2/name")` returns `"Widget"`
-- **THEN** the registry function receives `props.label === "Widget"`
-
-#### Scenario: $item empty string resolves to base path
-
-- **WHEN** inside a repeat at `/items/2`, an element has `props: { path: { $item: "" } }`
-- **THEN** the registry function receives `props.path === "/items/2"`
-
-#### Scenario: $index true resolves to numeric index
-
-- **WHEN** inside a repeat at index 5, an element has `props: { idx: { $index: true } }`
-- **THEN** the registry function receives `props.idx === 5`
-
-#### Scenario: $index false resolves to undefined
-
-- **WHEN** an element has `props: { idx: { $index: false } }`
-- **THEN** the registry function receives `props.idx === undefined`
+#### Scenario: $item expression resolved manually by the registry
+- **WHEN** inside a repeat at `/items/2`, an element has `props: { label: { $item: "name" } }` and the registry function resolves it against `ctx.basePath`
+- **THEN** the registry function receives `props.label` as the expression object and resolves it to the path `/items/2/name` (or reads the value at that path) using `ctx`
 
 #### Scenario: Plain values pass through unchanged
-
 - **WHEN** an element has `props: { count: 42, label: "Hello", flag: true }`
 - **THEN** the registry function receives `props.count === 42`, `props.label === "Hello"`, `props.flag === true`
 
-#### Scenario: Nested objects with expressions are recursively resolved
-
-- **WHEN** an element has `props: { meta: { source: { $state: "/src" } } }` and `store.get("/src")` returns `"api"`
-- **THEN** the registry function receives `props.meta.source === "api"`
-
 #### Scenario: Arrays in props pass through without expression resolution
-
 - **WHEN** an element has `props: { items: [{ $state: "/x" }] }`
-- **THEN** the array is passed through as-is (expression objects inside arrays are NOT resolved, consistent with `resolveParams` behavior)
+- **THEN** the array is passed through as-is (expression objects inside arrays are NOT resolved, mirroring the React-side behavior)
 
 ### Requirement: renderGeneric handles repeat iteration
 
@@ -120,8 +90,8 @@ The library SHALL log a warning when a referenced element key is missing from `s
 - **WHEN** an element has `type: "UnknownType"` and `registry` has no `UnknownType` key
 - **THEN** `console.warn` is called with a message including the type name, and the element renders as `null` without throwing
 
-### Requirement: Registry function receives resolved props and rendered children
-The library SHALL call each registry function with `(props, children, ctx)` where `props` is the element's `props` (or `{}` if undefined) with all expressions resolved, `children` is a flat array of results from rendering child elements (empty array if no children), and `ctx` is the `RenderContext`.
+### Requirement: Registry function receives raw props and rendered children
+The library SHALL call each registry function with `(props, children, ctx)` where `props` is the element's `props` (or `{}` if undefined) passed RAW (expressions unresolved), `children` is a flat array of results from rendering child elements (empty array if no children), and `ctx` is the `RenderContext`.
 
 For array-form `children`, `children` SHALL hold the rendered results in order and `ctx.slots` SHALL be `undefined`. For record-form `children`, `children` SHALL be an empty array and `ctx.slots` SHALL hold one entry per slot name, each entry being the array of results from rendering that slot's child elements (in the order listed; empty array if none). The two forms are mutually exclusive — a registry function receives results either via `children` or via `ctx.slots`, never both.
 
@@ -147,7 +117,7 @@ For an element with a `repeat` config, the above SHALL hold per item: each item'
 
 ### Requirement: GenericRegistry type is exported
 
-The library SHALL export a `GenericRegistry` type representing a mapping from spec type names to functions `(props: Record<string, unknown>, children: unknown[]) => unknown`. Registry entries MAY return different types — the type system does not enforce homogeneity. Users cast the return value of `renderGeneric` at the call site.
+The library SHALL export a `GenericRegistry` type representing a mapping from spec type names to functions `(props: Record<string, unknown>, children: unknown[], ctx: RenderContext) => unknown`. The `RenderContext` type SHALL also be exported. Registry entries MAY return different types — the type system does not enforce homogeneity. Users cast the return value of `renderGeneric` at the call site.
 
 #### Scenario: TypeScript compilation with GenericRegistry
 

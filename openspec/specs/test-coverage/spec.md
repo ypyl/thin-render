@@ -4,11 +4,11 @@ The project runs its test suite with Vitest and enforces full coverage threshold
 ## Requirements
 
 ### Requirement: Vitest runs all tests
-The project SHALL use Vitest as its test runner, replacing `node:test`. Running `npm test` SHALL execute all test files matching `src/**/*.test.ts` via `vitest run`.
+The project SHALL use Vitest as its test runner. Running `npm test` SHALL execute all test files matching `src/**/*.test.ts` (and `.test.tsx`) via `vitest run`.
 
 #### Scenario: All existing tests pass
 - **WHEN** `npm test` is executed
-- **THEN** all 20 existing tests pass with unchanged assertions
+- **THEN** all existing tests pass with unchanged assertions
 - **AND** the exit code is 0
 
 #### Scenario: Watch mode for development
@@ -24,12 +24,12 @@ The project SHALL generate code coverage reports using `@vitest/coverage-v8`. Ru
 - **AND** the report shows 100% across all metrics
 
 #### Scenario: Coverage falls below threshold
-- **WHEN** code changes cause line coverage to drop below 35%
+- **WHEN** code changes cause line coverage to drop below 100%
 - **THEN** `npm run coverage` exits with a non-zero code
 - **AND** the failing threshold is reported in the output
 
 ### Requirement: Tests import from source instead of inlining
-Test files SHALL import functions under test from their source modules rather than inlining copies. This ensures coverage instrumentation tracks the actual source code.
+Test files SHALL import functions under test from their source modules rather than inlining copies. This ensures coverage instrumentation tracks the actual source code. The one exception is `src/actions.test.ts`, which inlines the built-in `setState` handler body to stay React-free (the handler lives in `src/contexts.tsx`).
 
 #### Scenario: Store tests import from source
 - **WHEN** `src/store.test.ts` is compiled and run
@@ -38,16 +38,8 @@ Test files SHALL import functions under test from their source modules rather th
 
 #### Scenario: Action tests import from source
 - **WHEN** `src/actions.test.ts` is compiled and run
-- **THEN** it imports `resolveParams` from `thin-render` (or `./hooks`)
-- **AND** it imports `getByPath`, `createStore` from `./store`
-- **AND** no store logic is duplicated in the test file
-
-### Requirement: resolveParams is part of the public API
-The `resolveParams` function SHALL be exported from the library barrel (`src/index.ts`) so it can be imported and tested directly, and used by consumers writing custom action handlers.
-
-#### Scenario: resolveParams is importable
-- **WHEN** a consumer imports `resolveParams` from `"thin-render"`
-- **THEN** the import resolves to the function defined in `src/hooks.ts`
+- **THEN** it imports `getByPath` and `createStore` from `./store`
+- **AND** the only inlined logic is the built-in `setState` handler body, kept React-free by design
 
 ### Requirement: Coverage thresholds are enforced
 The Vitest configuration SHALL define coverage thresholds that fail the build when not met.

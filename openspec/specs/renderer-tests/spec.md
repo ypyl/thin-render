@@ -22,15 +22,11 @@ The Renderer SHALL return null for null specs and specs with missing root elemen
 - **THEN** the Renderer returns null
 
 ### Requirement: Renderer handles missing elements gracefully
-The ElementRenderer SHALL warn and return null when an element key is not found in the spec, unless `loading` is true.
+The ElementRenderer SHALL warn and return null when an element key is not found in the spec.
 
-#### Scenario: Missing element with loading=false warns
-- **WHEN** a spec references a child element key that doesn't exist and `loading` is false
+#### Scenario: Missing element warns
+- **WHEN** a spec references a child element key that doesn't exist
 - **THEN** `console.warn` is called and null is returned for that child
-
-#### Scenario: Missing element with loading=true is silent
-- **WHEN** a spec references a child element key that doesn't exist and `loading` is true
-- **THEN** no warning is emitted and null is returned for that child
 
 ### Requirement: Renderer handles unknown component types
 The ElementRenderer SHALL warn and return null when an element's type has no matching registry component.
@@ -54,8 +50,8 @@ The RepeatChildren component SHALL render child elements once for each item in t
 - **WHEN** the store has an empty array at the repeat path
 - **THEN** no child elements are rendered and no error occurs
 
-### Requirement: All uncovered branches are covered
-The four remaining uncovered branches in store.ts, hooks.ts, and contexts.tsx SHALL have tests.
+### Requirement: Every branch in the renderer surface has a covering test
+The renderer, store, hooks, and contexts modules SHALL have tests covering every branch, enforced by the 100% coverage thresholds.
 
 #### Scenario: immutableSetByPath sets array index at terminal
 - **WHEN** `immutableSetByPath` is called with a path ending in a numeric index on an array parent
@@ -65,8 +61,8 @@ The four remaining uncovered branches in store.ts, hooks.ts, and contexts.tsx SH
 - **WHEN** `BUILTIN_SET_STATE` is called with `path: undefined` or `path: ""`
 - **THEN** `setState` is not called
 
-#### Scenario: resolveParams handles $index false
-- **WHEN** `resolveParams` processes `{ $index: false }`
+#### Scenario: resolveExpressions handles $index false
+- **WHEN** `resolveExpressions` processes `{ $index: false }`
 - **THEN** it returns `undefined` regardless of repeatIndex
 
 #### Scenario: useEmit handles setState built-in action

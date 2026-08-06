@@ -20,13 +20,6 @@ A `StackRow` component SHALL exist as a separate registry component that wraps c
 - **THEN** the StackRow component renders `<Stack gap={24}>{children}</Stack>`
 - **AND** children receive 24px vertical spacing
 
-### Requirement: Row component remains a transparent Fragment wrapper
-The `Row` component SHALL continue to render children in a React Fragment (`<></>`) with no wrapping DOM element, no conditional logic, and no Mantine imports.
-
-#### Scenario: Row renders as Fragment
-- **WHEN** a spec element has `type: "Row"`
-- **THEN** the Row component renders `<>{children}</>` with no wrapping DOM element
-
 ### Requirement: Large Case spec uses StackRow for repeat spacing
 The Large Case demo spec SHALL use `type: "StackRow"` with `gap: "md"` for the `list` repeat container so repeated `FieldsetRow` items are visually separated.
 

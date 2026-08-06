@@ -1,10 +1,11 @@
 # dynamic-repeat-paths Specification
 
 ## Purpose
-TBD - created by archiving change dynamic-repeat-paths. Update Purpose after archive.
+Repeat paths accept `$item` and `$state` expressions in addition to plain strings, enabling dynamic and nested repeat targets resolved at render time.
+
 ## Requirements
 ### Requirement: useResolvedPath resolves repeat.path expressions
-The `useResolvedPath(expr)` hook SHALL accept a value that is a plain string, `{ $item: "<field>" }`, or `{ $state: "<path>" }`. When `expr` is a string, it SHALL return it unchanged. When `expr` is `{ $item: "<field>" }`, it SHALL delegate to `useItemPath` logic — resolving against the current `PathContext` without a store subscription. When `expr` is `{ $state: "<path>" }`, it SHALL read the value at `<path>` from the store via `useValue` and return it; this creates a store subscription to `<path>`. When `expr` does not match any recognized shape, it SHALL return `undefined`.
+The `useResolvedPath(expr)` hook SHALL accept a value that is a plain string, `{ $item: "<field>" }`, or `{ $state: "<path>" }`. When `expr` is a string, it SHALL return it unchanged. When `expr` is `{ $item: "<field>" }`, it SHALL resolve against the current `PathContext` without a store subscription. When `expr` is `{ $state: "<path>" }`, it SHALL read the value at `<path>` from the store via `useValue` and return it; this creates a store subscription to `<path>`. When `expr` does not match any recognized shape, it SHALL return `undefined`.
 
 #### Scenario: Plain string passed through
 - **WHEN** `useResolvedPath("/items")` is called
@@ -43,7 +44,7 @@ The `useResolvedPath(expr)` hook SHALL accept a value that is a plain string, `{
 - **THEN** it returns `undefined`
 
 ### Requirement: RepeatConfig.path accepts expression types
-The `RepeatConfig` interface's `path` field SHALL accept `string | { $item: string } | { $state: string }` in addition to plain strings. Plain strings SHALL continue to work as absolute store paths (backward compatible). The `ItemExpression` and `StateExpression` interfaces SHALL be exported from the package.
+The `RepeatConfig` interface's `path` field SHALL accept `string | ItemExpression | StateExpression`. Plain strings SHALL continue to work as absolute store paths (backward compatible). The expression types are declared in `src/spec.ts` alongside the `Spec` types.
 
 #### Scenario: String path still valid
 - **WHEN** a spec has `repeat: { path: "/items" }`
@@ -67,11 +68,3 @@ When a `RepeatChildren` renders elements that themselves have a `repeat` with a 
 #### Scenario: Three levels of nested repeat
 - **WHEN** level-1 repeat at `/a`, level-2 repeat at `{ $item: "b" }`, level-3 repeat at `{ $item: "c" }`, and `/a/0/b/0/c` holds `[1, 2]`
 - **THEN** level-3 repeat renders two children scoped to `/a/0/b/0/c/0` and `/a/0/b/0/c/1`
-
-### Requirement: useResolvedPath is exported from the package
-`useResolvedPath` SHALL be exported from `src/index.ts` as a public hook.
-
-#### Scenario: useResolvedPath importable from thin-render
-- **WHEN** a consumer writes `import { useResolvedPath } from "thin-render"`
-- **THEN** it receives the hook function
-

@@ -1,7 +1,7 @@
 # translations-demo Specification
 
 ## Purpose
-TBD - created by archiving change translations-editor-demo. Update Purpose after archive.
+The translations demo edits a set of key-value translation strings, one per row, generated from a plain object repeat.
 ## Requirements
 ### Requirement: Translations editor demo uses object repeat
 A demo case SHALL exist at `/translations` that demonstrates `repeat` on a plain object. The store SHALL hold a `translations` object with string keys and string values. The spec SHALL use `repeat: { path: "/translations" }` to render one row per key. Each row SHALL contain a `PathLabel` for the key and a `BoundField` with `bind: ""` for the editable value.

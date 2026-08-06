@@ -1,7 +1,7 @@
 # dnd-table-demo Specification
 
 ## Purpose
-TBD - created by archiving change dnd-table-demo. Update Purpose after archive.
+The DndTable demo shows a sortable, editable table powered by @dnd-kit, with drag-and-drop reordering, add/remove rows, and an edit/save/cancel flow.
 ## Requirements
 ### Requirement: DndTable renders a sortable table with drag handles
 A `DndTable` component SHALL exist as a registry component that reads an array from the store at `element.props.path` and renders a Mantine `<Table>` with an auto-generated header row containing a drag column header, one `<Table.Th>` per entry in `element.props.columns`, and an actions column header. Rows SHALL be rendered via internal iteration (`.map()`) inside `<SortableContext>` using the `SortableRow` component. An "Add Row" button SHALL appear below the table, appending a new item with default values to the store. On drag end, DndTable SHALL compute the reordered array via `arrayMove` and write it to the store.

@@ -40,20 +40,20 @@ A handler named `cancelEdit` SHALL be registered in the demo's handlers map. Whe
 The Form, Actions, Large, and Table demo specs SHALL each include an `EditToggle` element with `on: { edit: { action: "startEdit" }, save: { action: "saveEdit" }, cancel: { action: "cancelEdit" } }`. Clicking the buttons SHALL invoke the corresponding handler.
 
 #### Scenario: Edit button invokes startEdit
-- **WHEN** the user clicks the "Edit" button in the Form tab
+- **WHEN** the user clicks the "Edit" button in the Form case
 - **THEN** the `startEdit` handler is invoked, state is snapshotted, and all BoundFields become editable
 
 #### Scenario: Save button invokes saveEdit
-- **WHEN** the user clicks the "Save" button in the Large tab
+- **WHEN** the user clicks the "Save" button in the Large case
 - **THEN** the `saveEdit` handler is invoked, the snapshot is cleared, and all BoundFields return to read-only
 
 #### Scenario: Cancel button invokes cancelEdit
-- **WHEN** the user edits fields in the Table tab then clicks "Cancel"
+- **WHEN** the user edits fields in the Table case then clicks "Cancel"
 - **THEN** the `cancelEdit` handler is invoked, all edits are reverted to the snapshot, and all BoundFields return to read-only
 
-### Requirement: Basic tab is unaffected
-The Basic tab spec SHALL NOT include an edit toggle button, as it contains no BoundFields.
+### Requirement: Basic case is unaffected
+The Basic case spec SHALL NOT include an edit toggle button, as it contains no BoundFields.
 
-#### Scenario: Basic tab has no edit button
-- **WHEN** the Basic tab is selected
-- **THEN** no Edit/ActionButton toggle is rendered in that tab
+#### Scenario: Basic case has no edit button
+- **WHEN** the Basic case renders
+- **THEN** no Edit/ActionButton toggle is rendered

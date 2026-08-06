@@ -1,7 +1,7 @@
 # path-label Specification
 
 ## Purpose
-TBD - created by archiving change translations-editor-demo. Update Purpose after archive.
+The PathLabel component renders the last segment of the current repeat path, showing the key name of the item being repeated.
 ## Requirements
 ### Requirement: PathLabel renders the current repeat key
 A `PathLabel` component SHALL exist as a registry component. It SHALL call `usePath()` and extract the last path segment. It SHALL render that segment as plain text. Outside a repeat context (empty path), it SHALL render nothing.

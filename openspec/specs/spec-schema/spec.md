@@ -1,8 +1,8 @@
 ## Purpose
-The spec schema defines the JSON structure for declarative UI: a root element key, an elements map, and per-element fields for props, children, event bindings (`on`), store-change watchers (`watch`), and array iteration (`repeat`).
+The spec schema defines the JSON structure for declarative UI: a root element key, an elements map, and per-element fields for props, children, event bindings (`on`), and array iteration (`repeat`).
 ## Requirements
 ### Requirement: Spec is a keyed element map with a root pointer
-The library SHALL accept a `Spec` value consisting of a `root` key (string) and an `elements` map keyed by element id. Each element in `elements` MUST declare a `type` (string) referencing a registry component. An element MAY declare `props` (a plain serializable object of literal values and path strings), `children` (an ordered array of child element ids OR a record mapping slot names to child element ids or arrays of child element ids), `on` (event→action bindings), `repeat` (array iteration config), and `watch` (store path → action bindings fired on store mutation).
+The library SHALL accept a `Spec` value consisting of a `root` key (string) and an `elements` map keyed by element id. Each element in `elements` MUST declare a `type` (string) referencing a registry component. An element MAY declare `props` (a plain serializable object of literal values and path strings), `children` (an ordered array of child element ids OR a record mapping slot names to child element ids or arrays of child element ids), `on` (event→action bindings), and `repeat` (array iteration config).
 
 When `children` is an array, it declares ordered children. When `children` is a record, each key is a **slot name** and each value is a child element id (single) or an array of child element ids (multiple elements in one slot). Slot names are arbitrary strings chosen by the spec author; the parent element's component renders each slot at a position of its choosing.
 
@@ -21,10 +21,6 @@ When `children` is an array, it declares ordered children. When `children` is a 
 #### Scenario: Missing root element fails gracefully
 - **WHEN** the `root` value does not match any key in `elements`
 - **THEN** `Renderer` renders nothing and does not throw
-
-#### Scenario: Element with watch field
-- **WHEN** a spec element has `watch: { "/form/name": [{ action: "validate", params: { value: { $state: "/form/name" } } }] }`
-- **THEN** the element is valid and renders normally; the `watch` field is handled by the renderer separately from rendering
 
 ### Requirement: Element props are plain values, never runtime-resolved expressions
 An element's `props` SHALL contain only literal values (string, number, boolean, null, arrays/objects thereof) and path strings (JSON-Pointer-like, e.g. `"/items/0/name"`). The renderer MUST NOT interpret `{ $state: "..." }`, `{ $bindState: "..." }`, `$computed`, or other dynamic expressions. Binding components read path strings out of `props` and subscribe via the store hooks.

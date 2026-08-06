@@ -1,7 +1,7 @@
 # npm-publish Specification
 
 ## Purpose
-TBD - created by archiving change publish-to-npm. Update Purpose after archive.
+The package compiles to ESM JavaScript with type declarations and publishes to the npm registry via a tag-triggered GitHub Actions workflow.
 ## Requirements
 ### Requirement: Package compiles to ESM JavaScript with declarations
 The project SHALL have a `tsconfig.build.json` that extends `tsconfig.json`, removes `noEmit`, and sets `outDir` to `dist` with `declaration: true`. Running `npm run build` SHALL invoke `tsc -p tsconfig.build.json` and produce `.js` and `.d.ts` files in `dist/` mirroring the `src/` structure. Relative imports in the compiled output SHALL use explicit `.js` extensions so Node's ESM loader can resolve them without a bundler.
@@ -23,7 +23,7 @@ The project SHALL have a `tsconfig.build.json` that extends `tsconfig.json`, rem
 - **AND** the module exposes the public exports (e.g. `createStore`, `useSelector`)
 
 ### Requirement: package.json exposes compiled entry points
-The `package.json` SHALL include `exports`, `main`, `module`, and `types` fields pointing into `dist/`. The `exports` field SHALL map `"."` to the ESM entry with a `types` condition for TypeScript. The `files` field SHALL be set to `["dist"]` to limit the published tarball.
+The `package.json` SHALL include `exports`, `main`, `module`, and `types` fields pointing into `dist/`. The `exports` field SHALL map `"."` to the ESM entry with a `types` condition for TypeScript. The `files` field SHALL be set to `["dist", "LLM.md"]` to limit the published tarball to the compiled output and the agent reference guide.
 
 #### Scenario: ESM import resolves to compiled output
 - **WHEN** a consumer runs `import { createStore } from "thin-render"`
@@ -32,7 +32,7 @@ The `package.json` SHALL include `exports`, `main`, `module`, and `types` fields
 
 #### Scenario: Published tarball contains only dist
 - **WHEN** `npm pack` is executed (dry-run of publish)
-- **THEN** the generated `.tgz` contains only files under `dist/`
+- **THEN** the generated `.tgz` contains only files under `dist/` plus `LLM.md`
 - **AND** does NOT contain `src/`, `demo/`, `openspec/`, test files, or config files
 
 ### Requirement: Tests run before publish

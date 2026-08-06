@@ -1,5 +1,5 @@
 ## Purpose
-The action system dispatches user gestures (via `emit`) and store changes (via `watch`) to registered handler functions. Handlers receive resolved params and a `{ getState, setState }` API for reading and mutating the store.
+The action system dispatches user gestures (via `emit`) to registered handler functions. Handlers receive resolved params and a `{ getState, setState }` API for reading and mutating the store.
 ## Requirements
 ### Requirement: Handlers are registered once at the top
 The library SHALL accept a `handlers` map (string → handler function) provided to `<Renderer>` (or a provider). Handler registration is independent of state — the `ActionContext` value holds the `handlers` reference plus stable `getState`/`setState` functions, and the context value SHALL be referentially stable across state mutations.
@@ -43,17 +43,6 @@ The act of calling `emit` SHALL NOT trigger any re-render. Re-renders SHALL occu
 #### Scenario: Handler that does nothing causes no re-render
 - **WHEN** `emit("click")` invokes a handler `() => {}` that performs no `setState`
 - **THEN** no component re-renders as a result of the dispatch
-
-### Requirement: Actions can be triggered by store changes via watch
-In addition to `emit(eventName)` via `on` bindings, actions SHALL be triggerable by store mutations via `watch` bindings. When a watched store path changes, the configured action bindings SHALL be resolved and their handlers invoked exactly as if triggered by `emit` — same param resolution, same `{ getState, setState }` API, same handler function signature. The handler SHALL NOT be able to distinguish whether it was triggered by `emit` or by `watch`.
-
-#### Scenario: Watch-triggered handler receives same API as emit-triggered
-- **WHEN** a handler is invoked via `watch` on `/form/name`
-- **THEN** it receives `(resolvedParams, { getState, setState })` — identical to being invoked via `emit("click")`
-
-#### Scenario: Built-in setState works in watch bindings
-- **WHEN** an element has `watch: { "/country": [{ action: "setState", params: { path: "/city", value: "" } }] }` and `/country` changes from `"US"` to `"CA"`
-- **THEN** `/city` is set to `""` without any user-registered handler
 
 ### Requirement: emit warns when element has no on map
 When `emit(eventName)` is called on an element with no `on` map (`on` is `undefined` or `null`), the library SHALL call `console.warn` with a descriptive message indicating the element has no action bindings. The emit call SHALL still return without error.

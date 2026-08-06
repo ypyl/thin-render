@@ -26,10 +26,10 @@ The demo SHALL provide a reusable `EditToggle` component that subscribes to `/ed
 - **WHEN** the user clicks the "Cancel" button in edit mode
 - **THEN** `emit("cancel")` is called, which resolves to the `cancelEdit` handler
 
-### Requirement: EditToggle replaces ActionButton as the edit toggle across all tabs
-The Form, Actions, Large, and Table demo tabs SHALL each use an `EditToggle` element instead of the previous `ActionButton` "Edit" toggle. Each spec SHALL map the `edit`, `save`, and `cancel` events to the corresponding handlers.
+### Requirement: EditToggle is the edit toggle across the editable cases
+The Form, Actions, Large, and Table demo cases SHALL each use an `EditToggle` element instead of the previous `ActionButton` "Edit" toggle. Each spec SHALL map the `edit`, `save`, and `cancel` events to the corresponding handlers.
 
-#### Scenario: Form tab uses EditToggle
+#### Scenario: Form case uses EditToggle
 - **WHEN** the Form tab is selected
 - **THEN** an `EditToggle` is rendered at the top of the form, not an `ActionButton` with `toggleEdit`
 

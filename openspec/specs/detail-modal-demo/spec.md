@@ -21,7 +21,7 @@ A `closeModal` handler SHALL exist that sets `/itemDetail` to `undefined`.
 - **THEN** `/itemDetail` becomes `undefined`
 
 ### Requirement: Spec builder generates the full spec
-A `buildDetailModalSpec` function SHALL generate a spec with a CaseContainer root containing a table of items and a Modal. The table body SHALL use `repeat` on `/items` with `TBody`/`Tr`/`Td` components. Each row SHALL have an `ActionButton` dispatching `loadDetail` with the item's id via `{ $item: "id" }`. The Modal SHALL use a `Switch` on `/loadingDetail` to show either a loading message or the detail content. Detail content SHALL use `StaticText` components reading from `/itemDetail` subpaths via `useValue`.
+A `buildDetailModalSpec` function SHALL generate a spec with a CaseContainer root containing a table of items and a Modal. The table body SHALL use `repeat` on `/items` with `TBody`/`Tr`/`Td` components. Each row SHALL have an `ActionButton` dispatching `loadDetail` with the item's id via `{ $item: "id" }`. The Modal SHALL use a `LoadingBox` on `/loadingDetail` to show either a loading message or the detail content. Detail content SHALL use `BoundField` components bound to `/itemDetail` subpaths.
 
 #### Scenario: Spec structure
 - **WHEN** `buildDetailModalSpec(10)` is called
@@ -39,7 +39,7 @@ A `DetailModalCase` component SHALL create a store with initial items and SHALL 
 - **AND** `/loadingDetail` is `false`
 
 ### Requirement: Registry includes all required components
-The detail modal case registry SHALL include `CaseContainer`, `Table`, `TBody`, `Tr`, `Td`, `ActionButton`, `Modal`, `Switch`, `StaticText`, and `StackRow`.
+The detail modal case registry SHALL include `CaseContainer`, `Table`, `THead`, `TBody`, `Tr`, `Th`, `Td`, `BoundField`, `ActionButton`, `Modal`, `LoadingBox`, and `StackRow`.
 
 #### Scenario: All components registered
 - **WHEN** the spec references `type: "Modal"`
