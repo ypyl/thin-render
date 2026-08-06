@@ -18,7 +18,7 @@ demo/README.md, and LLM.md in sync where the public API changes.
       remove the `resolveParams` tests in `src/actions.test.ts`. Not
       exported, not documented. Replacement: nothing.
 
-- [ ] 3. **Delete `debug`/`log` `StoreOptions`** — undocumented, no consumer
+- [x] 3. **Delete `debug`/`log` `StoreOptions`** — undocumented, no consumer
       in the library, demo, or docs; kept alive only by its own tests.
       Drop the `options` parameter of `createStore` in `src/store.ts`
       (nothing passes it) and remove its tests in `src/store.test.ts`
