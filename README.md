@@ -190,7 +190,6 @@ The child spec fires parent actions with `action: "parent.<name>"` and self-iden
 | `registry` | `Registry` | `Record<string, ComponentType<ComponentProps>>` |
 | `store` | `Store` | Created by `createStore()`, stable reference |
 | `handlers` | `Handlers?` | `Record<string, Handler>` — action handlers |
-| `loading` | `boolean?` | Suppresses missing-element warnings during streaming |
 
 ### Hooks
 

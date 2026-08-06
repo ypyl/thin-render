@@ -2,7 +2,7 @@
 //
 // Key design invariants (see design.md):
 //   - ElementRenderer subscribes to NO state — no useValue/useBound inside.
-//   - It's React.memo'd on { elementKey, spec, registry, loading }.
+//   - It's React.memo'd on { elementKey, spec, registry }.
 //   - Emit is built per-element from useEmit(OnMap), stable when on map is stable.
 //   - RepeatChildren subscribes only to repeat.path via useValue.
 //   - Children contract: array-form children → `children` prop; record-form
@@ -47,7 +47,6 @@ interface ElementRendererProps {
   elementKey: string;
   spec: Spec;
   registry: Registry;
-  loading?: boolean;
 }
 
 /**
@@ -58,7 +57,6 @@ function buildSlots(
   slotMap: SlotMap,
   spec: Spec,
   registry: Registry,
-  loading?: boolean,
 ): Record<string, ReactNode> {
   return Object.fromEntries(
     Object.entries(slotMap).map(([slotName, slotKeys]) => [
@@ -69,7 +67,6 @@ function buildSlots(
           elementKey={childKey}
           spec={spec}
           registry={registry}
-          loading={loading}
         />
       )),
     ]),
@@ -81,17 +78,14 @@ const _ElementRenderer = memo(function ElementRenderer({
   elementKey,
   spec,
   registry,
-  loading,
 }: ElementRendererProps) {
   const element: UIElement | undefined = spec.elements[elementKey];
 
   // ── Unknown type ──
   if (!element) {
-    if (!loading) {
-      console.warn(
-        `thin-render: missing element "${elementKey}" referenced in spec.`,
-      );
-    }
+    console.warn(
+      `thin-render: missing element "${elementKey}" referenced in spec.`,
+    );
     return null;
   }
 
@@ -120,7 +114,6 @@ const _ElementRenderer = memo(function ElementRenderer({
           childKeys={element.children ?? []}
           spec={spec}
           registry={registry}
-          loading={loading}
         />,
       );
     }
@@ -132,7 +125,6 @@ const _ElementRenderer = memo(function ElementRenderer({
         slotMap={element.children}
         spec={spec}
         registry={registry}
-        loading={loading}
         Component={Component}
         element={element}
         on={on}
@@ -151,7 +143,6 @@ const _ElementRenderer = memo(function ElementRenderer({
           elementKey={childKey}
           spec={spec}
           registry={registry}
-          loading={loading}
         />
       )),
     );
@@ -161,7 +152,7 @@ const _ElementRenderer = memo(function ElementRenderer({
   if (element.children) {
     return createElement(
       Component,
-      { element, emit, slots: buildSlots(element.children, spec, registry, loading) } satisfies ComponentProps,
+      { element, emit, slots: buildSlots(element.children, spec, registry) } satisfies ComponentProps,
     );
   }
 
@@ -202,7 +193,6 @@ function RepeatChildren({
   childKeys,
   spec,
   registry,
-  loading,
 }: RepeatChildrenProps) {
   const resolvedPath = useResolvedPath(repeat.path);
   if (!resolvedPath) return null;
@@ -218,7 +208,6 @@ function RepeatChildren({
               elementKey={childKey}
               spec={spec}
               registry={registry}
-              loading={loading}
             />
           ))}
         </RepeatScope>
@@ -232,7 +221,6 @@ interface RepeatChildrenProps {
   childKeys: string[];
   spec: Spec;
   registry: Registry;
-  loading?: boolean;
 }
 
 /** Renders one component instance per item, each receiving named slots. */
@@ -241,7 +229,6 @@ function RepeatSlots({
   slotMap,
   spec,
   registry,
-  loading,
   Component,
   element,
   on,
@@ -250,7 +237,6 @@ function RepeatSlots({
   slotMap: SlotMap;
   spec: Spec;
   registry: Registry;
-  loading?: boolean;
   Component: ComponentType<ComponentProps>;
   element: UIElement;
   on?: OnMap;
@@ -266,7 +252,6 @@ function RepeatSlots({
           <RepeatSlotItem
             spec={spec}
             registry={registry}
-            loading={loading}
             element={element}
             slotMap={slotMap}
             Component={Component}
@@ -285,7 +270,6 @@ function RepeatSlots({
 function RepeatSlotItem({
   spec,
   registry,
-  loading,
   element,
   slotMap,
   Component,
@@ -293,7 +277,6 @@ function RepeatSlotItem({
 }: {
   spec: Spec;
   registry: Registry;
-  loading?: boolean;
   element: UIElement;
   slotMap: SlotMap;
   Component: ComponentType<ComponentProps>;
@@ -302,7 +285,7 @@ function RepeatSlotItem({
   const emit = useEmit(on);
   return createElement(
     Component,
-    { element, emit, slots: buildSlots(slotMap, spec, registry, loading) } satisfies ComponentProps,
+    { element, emit, slots: buildSlots(slotMap, spec, registry) } satisfies ComponentProps,
   );
 }
 
@@ -332,8 +315,6 @@ export interface RendererProps {
   store: Store;
   /** Action handlers (created once, stable reference). Built-in setState always present. */
   handlers?: Handlers;
-  /** Whether the spec is still loading (suppresses missing-element warnings). */
-  loading?: boolean;
 }
 
 /** Top-level renderer: wires providers and renders the root element. */
@@ -342,7 +323,6 @@ export function Renderer({
   registry,
   store,
   handlers = {},
-  loading,
 }: RendererProps) {
   if (!spec?.root) return null;
   if (!spec.elements[spec.root]) return null;
@@ -360,7 +340,6 @@ export function Renderer({
               elementKey={spec.root}
               spec={spec}
               registry={registry}
-              loading={loading}
             />
           </ActionProvider>
         </StoreProvider>

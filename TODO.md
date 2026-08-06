@@ -27,7 +27,7 @@ demo/README.md, and LLM.md in sync where the public API changes.
 - [x] 4. **Remove `playwright` devDependency** — zero usage anywhere in the
       repo. Remove from `package.json` devDependencies.
 
-- [ ] 5. **Remove `@mantine/hooks` demo dependency** — zero imports in
+- [x] 5. **Remove `@mantine/hooks` demo dependency** — zero imports in
       `demo/src`. Remove from `demo/package.json` dependencies.
 
 - [ ] 6. **Remove `Renderer` `loading` prop** — documented in README

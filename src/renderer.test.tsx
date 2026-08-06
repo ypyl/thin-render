@@ -74,7 +74,7 @@ describe("Renderer", () => {
 // ── Tests: ElementRenderer edge cases ─────────────────────────────
 
 describe("ElementRenderer", () => {
-  it("warns when element key is missing and loading is false", () => {
+  it("warns when element key is missing", () => {
     const store = createStore();
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const spec: Spec = {
@@ -91,24 +91,6 @@ describe("ElementRenderer", () => {
     expect(warn).toHaveBeenCalledWith(
       expect.stringContaining('missing element "missing"'),
     );
-    warn.mockRestore();
-  });
-
-  it("does NOT warn when element key is missing and loading is true", () => {
-    const store = createStore();
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const spec: Spec = {
-      root: "r",
-      elements: {
-        r: { type: "Spy", children: ["missing"] },
-      },
-    };
-    const Spy = makeSpy();
-    const registry: Registry = { Spy };
-
-    render(<Renderer spec={spec} registry={registry} store={store} loading />);
-
-    expect(warn).not.toHaveBeenCalled();
     warn.mockRestore();
   });
 
