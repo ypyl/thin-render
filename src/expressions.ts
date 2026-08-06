@@ -8,9 +8,9 @@ import { getByPath } from "./store.js";
  * Recursively resolve `$state`, `$item`, and `$index` expression objects in a
  * plain params/props record. Arrays pass through without resolution.
  *
- * - `{ $state: "/path" }` → `getByPath(getState(), "/path")` (read-once)
- * - `{ $item: "field" }`  → `getByPath(getState(), "${basePath}/field")` (reads store value, not path string)
- * - `{ $item: "" }`        → `getByPath(getState(), basePath)` (reads store value at scope)
+ * - `{ $state: "/path" }` → `getByPath(getState(), "/path")` (read-once value)
+ * - `{ $item: "field" }`  → `"${basePath}/field"` (absolute path string, not a value)
+ * - `{ $item: "" }`        → `basePath` (the repeat scope path itself)
  * - Plain objects recurse; all other values pass through.
  */
 export function resolveExpressions(

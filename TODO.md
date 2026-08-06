@@ -37,7 +37,7 @@ demo/README.md, and LLM.md in sync where the public API changes.
       and drop the related tests in `src/renderer.test.tsx` (around
       lines 77-109).
 
-- [ ] 7. **Shrink `useBound`** — the `set` wrapper around `setRaw` is
+- [x] 7. **Shrink `useBound`** — the `set` wrapper around `setRaw` is
       redundant: `setRaw` is already stable (`useCallback` on
       `[store, path]`) and its `(value: unknown) => void` type is
       assignable to the returned `(value: T) => void`. Return `setRaw`
@@ -45,7 +45,7 @@ demo/README.md, and LLM.md in sync where the public API changes.
 
 ## Review (correctness, out of audit scope)
 
-- [ ] 8. **Check `resolveExpressions` `$item` semantics** — the doc comment
+- [x] 8. **Check `resolveExpressions` `$item` semantics** — the doc comment
       for `{ $item: "" }` says "reads store value at scope" but the code
       returns the path string. Decide which is intended and fix the comment
       or the code in `src/expressions.ts`.
