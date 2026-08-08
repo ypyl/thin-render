@@ -34,7 +34,7 @@ npm run dev    # starts at http://localhost:5173
 | **DOCX Export** | Edit data, then export it as a Word document. |
 | **XLSX Export** | Edit data, then export it as a spreadsheet. |
 | **Nested Package** | The same feature embedded twice in one page plus a standalone copy, each with its own data. |
-| **Store Debug** | A store wrapped in a logging decorator; every write shows up live in a debug panel with its path, previous value, and new value. |
+| **Store Debug** | A store wrapped in a logging decorator; every write shows up live in a debug panel with its path, previous value, and new value. Poke the store from the console via `window.__store` — console writes land in the log too. |
 
 ## Performance verification
 

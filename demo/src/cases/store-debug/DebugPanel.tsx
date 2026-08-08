@@ -96,6 +96,21 @@ export function DebugPanel({ log }: { log: LogStore }) {
           {JSON.stringify(state, null, 2)}
         </Text>
       </ScrollArea>
+
+      <Divider my="sm" />
+      <Text size="xs" fw={700} mb={4}>
+        Console
+      </Text>
+      <Text size="xs" c="dimmed" mb={4}>
+        The raw store is exposed as <Text span component="code">window.__store</Text>. Try these in
+        the DevTools console — a console write goes through the same set() as a
+        binding or handler, so it lands in the log above.
+      </Text>
+      <Text component="pre" size="xs" style={{ margin: 0, whiteSpace: "pre-wrap" }}>
+        {`window.__store.getState()
+window.__store.get("/tags/0/label")
+window.__store.set("/customer/name", "Katherine Johnson")`}
+      </Text>
     </Paper>
   );
 }

@@ -28,6 +28,11 @@ export function StoreDebugCase() {
   // Assign in an effect (not the initializer): StrictMode double-invokes
   // initializers in dev, and an assignment there could point at a discarded
   // store. Effects run once on the committed instance.
+  //
+  // Usage: open the DevTools console on this page and poke the raw store —
+  // window.__store.getState(), .get("/path"), .set("/path", value). A
+  // console write goes through the same set() as a binding or handler, so it
+  // shows up in the write log like any other.
   useEffect(() => {
     window.__store = store;
   }, [store]);

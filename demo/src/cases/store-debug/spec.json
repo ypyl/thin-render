@@ -6,7 +6,7 @@
       "props": {
         "title": "Store Debug",
         "description": "A spec-driven app whose store is wrapped in a logging decorator. Every write lands in the live log on the right — path, previous value, new value, no-op flag.",
-        "technicalDescription": "The store is a plain object (get/set/subscribe/getState) and the Renderer accepts any implementation. Wrapping it in a decorator that records each set() call gives full write visibility with no library support: typing in a field, clicking a button, and handler writes all funnel through the same set(). Same-value writes are recorded as no-op — the real store ignores them silently."
+        "technicalDescription": "The store is a plain object (get/set/subscribe/getState) and the Renderer accepts any implementation. Wrapping it in a decorator that records each set() call gives full write visibility with no library support: typing in a field, clicking a button, and handler writes all funnel through the same set(). Same-value writes are recorded as no-op — the real store ignores them silently. The raw store is also exposed as window.__store in the console: window.__store.getState() / .get(\"/path\") / .set(\"/path\", value) — console writes go through the same set() and appear in the log."
       },
       "children": ["fields", "tags", "summary", "actions"]
     },

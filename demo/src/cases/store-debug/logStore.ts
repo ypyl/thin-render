@@ -35,7 +35,14 @@ export interface LogStore {
 
 declare global {
   interface Window {
-    /** The underlying (unwrapped) store, for console poking. */
+    /**
+     * The underlying (unwrapped) store, for console poking.
+     *
+     * Assigned by StoreDebugCase's effect (not here — StrictMode). Usage in
+     * the DevTools console: window.__store.getState(), .get("/path"),
+     * .set("/path", value). Console writes go through the same set() as
+     * bindings/handlers, so they land in the wrapper's write log.
+     */
     __store?: Store;
   }
 }
