@@ -325,7 +325,7 @@ interface ActionBinding {
 
 ## Demo
 
-The demo app (`demo/`) has eighteen self-contained cases:
+The demo app (`demo/`) has nineteen self-contained cases:
 
 | Case | What it shows | Source |
 |-----|---------------|--------|
@@ -347,6 +347,7 @@ The demo app (`demo/`) has eighteen self-contained cases:
 | **DOCX Export** | Edit data, then export it as a Word document. | [`DocxExportCase.tsx`](./demo/src/cases/docx-export/DocxExportCase.tsx) · [`spec.json`](./demo/src/cases/docx-export/spec.json) · [`docxSpec.ts`](./demo/src/cases/docx-export/docxSpec.ts) · [`docxRegistry.ts`](./demo/src/cases/docx-export/docxRegistry.ts) · [`registry.ts`](./demo/src/cases/docx-export/registry.ts) |
 | **XLSX Export** | Edit data, then export it as a spreadsheet. | [`XlsxExportCase.tsx`](./demo/src/cases/xlsx-export/XlsxExportCase.tsx) · [`spec.json`](./demo/src/cases/xlsx-export/spec.json) · [`xlsxSpec.ts`](./demo/src/cases/xlsx-export/xlsxSpec.ts) · [`xlsxRegistry.ts`](./demo/src/cases/xlsx-export/xlsxRegistry.ts) · [`registry.ts`](./demo/src/cases/xlsx-export/registry.ts) |
 | **Nested Package** | The same feature embedded twice in one page plus a standalone copy, each with its own data. | [`NestedPackageCase.tsx`](./demo/src/cases/nested-package/NestedPackageCase.tsx) · [`spec.json`](./demo/src/cases/nested-package/spec.json) · [`handlers.ts`](./demo/src/cases/nested-package/handlers.ts) · [`registry.ts`](./demo/src/cases/nested-package/registry.ts) · [`child/EmbeddedChild.tsx`](./demo/src/cases/nested-package/child/EmbeddedChild.tsx) · [`child/spec.json`](./demo/src/cases/nested-package/child/spec.json) · [`child/registry.ts`](./demo/src/cases/nested-package/child/registry.ts) · [`child/StandaloneChild.tsx`](./demo/src/cases/nested-package/child/StandaloneChild.tsx) |
+| **Store Debug** | A store wrapped in a logging decorator; every write shows up live in a debug panel with its path, previous value, and new value. | [`StoreDebugCase.tsx`](./demo/src/cases/store-debug/StoreDebugCase.tsx) · [`spec.json`](./demo/src/cases/store-debug/spec.json) · [`handlers.ts`](./demo/src/cases/store-debug/handlers.ts) · [`registry.tsx`](./demo/src/cases/store-debug/registry.tsx) · [`logStore.ts`](./demo/src/cases/store-debug/logStore.ts) · [`DebugPanel.tsx`](./demo/src/cases/store-debug/DebugPanel.tsx) |
 
 ## Q&A
 

@@ -1,0 +1,74 @@
+{
+  "root": "card",
+  "elements": {
+    "card": {
+      "type": "CaseContainer",
+      "props": {
+        "title": "Store Debug",
+        "description": "A spec-driven app whose store is wrapped in a logging decorator. Every write lands in the live log on the right — path, previous value, new value, no-op flag.",
+        "technicalDescription": "The store is a plain object (get/set/subscribe/getState) and the Renderer accepts any implementation. Wrapping it in a decorator that records each set() call gives full write visibility with no library support: typing in a field, clicking a button, and handler writes all funnel through the same set(). Same-value writes are recorded as no-op — the real store ignores them silently."
+      },
+      "children": ["fields", "tags", "summary", "actions"]
+    },
+    "fields": {
+      "type": "StackRow",
+      "props": { "gap": "sm" },
+      "children": ["name", "email"]
+    },
+    "name": {
+      "type": "BoundField",
+      "props": { "bind": "customer/name", "label": "Name" }
+    },
+    "email": {
+      "type": "BoundField",
+      "props": { "bind": "customer/email", "label": "Email" }
+    },
+    "tags": {
+      "type": "StackRow",
+      "props": { "gap": "xs" },
+      "repeat": { "path": "/tags" },
+      "children": ["tagRow"]
+    },
+    "tagRow": {
+      "type": "StackRow",
+      "props": { "gap": "xs" },
+      "children": ["tagKey", "tagField"]
+    },
+    "tagKey": {
+      "type": "PathLabel",
+      "props": {}
+    },
+    "tagField": {
+      "type": "BoundField",
+      "props": { "bind": "label", "label": "Tag" }
+    },
+    "summary": {
+      "type": "StackRow",
+      "props": { "gap": "xs" },
+      "children": ["summaryText", "updatedText"]
+    },
+    "summaryText": {
+      "type": "StoreValue",
+      "props": { "bind": "/summary", "label": "Summary" }
+    },
+    "updatedText": {
+      "type": "StoreValue",
+      "props": { "bind": "/lastUpdated", "label": "Last updated" }
+    },
+    "actions": {
+      "type": "StackRow",
+      "props": { "gap": "sm", "align": "flex-start" },
+      "children": ["updateBtn", "noopBtn"]
+    },
+    "updateBtn": {
+      "type": "ActionButton",
+      "props": { "label": "Update summary (multi-write)" },
+      "on": { "click": { "action": "updateSummary" } }
+    },
+    "noopBtn": {
+      "type": "ActionButton",
+      "props": { "label": "Write same value (no-op)" },
+      "on": { "click": { "action": "noopWrite" } }
+    }
+  }
+}

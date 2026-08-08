@@ -111,6 +111,12 @@ const CASES = [
     title: "Nested Package",
     description: "The same small feature appears twice inside one page and once as a standalone card. Each instance keeps its own data.",
   },
+  {
+    route: "/store-debug",
+    emoji: "🐞",
+    title: "Store Debug",
+    description: "A store wrapped in a logging decorator: every write shows up live in a debug panel with its path, previous value, and new value. No library support needed.",
+  },
 ];
 
 export function HomePage() {
