@@ -1,20 +1,22 @@
-// DebugPanel.tsx — live write log for the wrapped store.
+// DebugPanel.tsx — live write log for the wrapped store, hosted inside the
+// floating DebugWindow.
 //
-// Plain React (not spec-driven): the panel is debugging chrome that lives
-// next to the Renderer. useSyncExternalStore subscribes to the entry list;
-// a separate root subscription on the wrapped store keeps the state
-// snapshot live even while the log is paused.
+// Plain React (not spec-driven): the panel is debugging chrome that floats
+// over the app. useSyncExternalStore subscribes to the entry list; a
+// separate root subscription on the wrapped store keeps the state snapshot
+// live even while the log is paused. The panel fills the window: the log
+// takes all flexible space, the snapshot sits collapsed behind a spoiler,
+// and the console hints stay pinned at the bottom.
 import { useEffect, useReducer, useSyncExternalStore, useState } from "react";
 import {
   Badge,
   Button,
   Divider,
   Group,
-  Paper,
   ScrollArea,
+  Spoiler,
   Stack,
   Text,
-  Title,
 } from "@mantine/core";
 import type { LogEntry, LogStore } from "./logStore";
 
@@ -47,9 +49,11 @@ export function DebugPanel({ log }: { log: LogStore }) {
   const state = log.store.getState();
 
   return (
-    <Paper shadow="sm" p="md" withBorder style={{ maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
+    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", width: "100%" }}>
       <Group justify="space-between" mb="xs">
-        <Title order={4}>Write log</Title>
+        <Text size="sm" fw={500}>
+          Write log
+        </Text>
         <Group gap="xs">
           {paused ? <Badge color="orange">paused</Badge> : null}
           <Badge color={entries.length > 0 ? "teal" : "gray"}>{entries.length} entries</Badge>
@@ -73,7 +77,7 @@ export function DebugPanel({ log }: { log: LogStore }) {
         </Button>
       </Group>
 
-      <ScrollArea style={{ flex: 1, minHeight: 200 }}>
+      <ScrollArea style={{ flex: 1, minHeight: 0 }}>
         {entries.length === 0 ? (
           <Text c="dimmed" size="sm">
             No writes yet. Type in a field or click a button.
@@ -88,14 +92,21 @@ export function DebugPanel({ log }: { log: LogStore }) {
       </ScrollArea>
 
       <Divider my="sm" />
-      <Text size="xs" c="dimmed" mb={4}>
-        State snapshot (from <Text span component="code">window.__store.getState()</Text>)
-      </Text>
-      <ScrollArea style={{ maxHeight: 180 }}>
-        <Text component="pre" size="xs" style={{ margin: 0 }}>
-          {JSON.stringify(state, null, 2)}
+      <Spoiler
+        maxHeight={0}
+        showLabel="Show state snapshot"
+        hideLabel="Hide state snapshot"
+        mb="sm"
+      >
+        <Text size="xs" c="dimmed" mb={4}>
+          From <Text span component="code">window.__store.getState()</Text>
         </Text>
-      </ScrollArea>
+        <ScrollArea style={{ maxHeight: 140 }}>
+          <Text component="pre" size="xs" style={{ margin: 0 }}>
+            {JSON.stringify(state, null, 2)}
+          </Text>
+        </ScrollArea>
+      </Spoiler>
 
       <Divider my="sm" />
       <Text size="xs" fw={700} mb={4}>
@@ -111,16 +122,17 @@ export function DebugPanel({ log }: { log: LogStore }) {
 window.__store.get("/tags/0/label")
 window.__store.set("/customer/name", "Katherine Johnson")`}
       </Text>
-    </Paper>
+    </div>
   );
 }
 
 function LogRow({ entry }: { entry: LogEntry }) {
   return (
-    <Paper
-      withBorder
-      p={4}
+    <div
       style={{
+        border: "1px solid var(--mantine-color-default-border)",
+        borderRadius: 4,
+        padding: 4,
         background: entry.noop
           ? "var(--mantine-color-gray-0)"
           : "var(--mantine-color-teal-0)",
@@ -144,7 +156,7 @@ function LogRow({ entry }: { entry: LogEntry }) {
           </Badge>
         ) : null}
       </Group>
-    </Paper>
+    </div>
   );
 }
 

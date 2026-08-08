@@ -1,12 +1,13 @@
-// StoreDebugCase.tsx — spec-driven app over a logging store wrapper, with a
-// live write log beside it. The wrapped store is what the Renderer gets, so
-// every write (bindings, actions, handlers) lands in the log.
+// StoreDebugCase.tsx — spec-driven app over a logging store wrapper, with
+// floating debug chrome: a corner button opens a draggable window with the
+// live write log. The wrapped store is what the Renderer gets, so every
+// write (bindings, actions, handlers) lands in the log.
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { Breadcrumbs, Container, SimpleGrid } from "@mantine/core";
+import { Breadcrumbs, Container } from "@mantine/core";
 import { Renderer, createStore } from "thin-render";
 import { createLogStore } from "./logStore";
-import { DebugPanel } from "./DebugPanel";
+import { DebugWindow } from "./DebugWindow";
 import { handlers } from "./handlers";
 import { registry } from "./registry";
 import spec from "./spec.json";
@@ -24,6 +25,7 @@ export function StoreDebugCase() {
     }),
   );
   const [log] = useState(() => createLogStore(store));
+  const [debugOpen, setDebugOpen] = useState(false);
 
   // Assign in an effect (not the initializer): StrictMode double-invokes
   // initializers in dev, and an assignment there could point at a discarded
@@ -43,10 +45,8 @@ export function StoreDebugCase() {
         <Link href="/">Home</Link>
         <span>Store Debug</span>
       </Breadcrumbs>
-      <SimpleGrid cols={{ base: 1, lg: 2 }} spacing="lg" style={{ alignItems: "start" }}>
-        <Renderer spec={spec} registry={registry} store={log.store} handlers={handlers} />
-        <DebugPanel log={log} />
-      </SimpleGrid>
+      <Renderer spec={spec} registry={registry} store={log.store} handlers={handlers} />
+      <DebugWindow log={log} open={debugOpen} onOpenChange={setDebugOpen} />
     </Container>
   );
 }
