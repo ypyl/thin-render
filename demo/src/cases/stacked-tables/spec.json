@@ -1,0 +1,78 @@
+{
+  "root": "container",
+  "elements": {
+    "container": {
+      "type": "CaseContainer",
+      "props": {
+        "title": "Stacked Tables",
+        "description": "Three tables with different columns, all visible at once — rendered by one static spec. The spec declares each table's columns; data may carry extra fields that are never shown.",
+        "technicalDescription": "The spec declares each table's column set under the tables element's \"columns\" prop (key + label per column). The case seeds /tables/<name>/colDefs from that prop once, and the load handler writes only /tables/<name>/rows — headers are never derived from data. The datasets also carry fields the spec does not declare (id, active, category, weightKg): only the declared columns render, so extra data is ignored. The spec repeats over /tables; headers repeat the table's colDefs at the table scope, and each body row repeats the table's colDefs one scope up via { \"$item\": \"colDefs\", \"$scope\": 1 }. Cells bind their value across the row and column scopes."
+      },
+      "children": ["controls", "tables"]
+    },
+    "controls": {
+      "type": "StackRow",
+      "props": { "gap": "xs", "align": "flex-start" },
+      "children": ["btnUsers", "btnProducts", "btnMixed"]
+    },
+    "btnUsers": {
+      "type": "ActionButton",
+      "props": { "label": "Reload Users" },
+      "on": { "click": { "action": "loadDataset", "params": { "dataset": "users" } } }
+    },
+    "btnProducts": {
+      "type": "ActionButton",
+      "props": { "label": "Reload Products" },
+      "on": { "click": { "action": "loadDataset", "params": { "dataset": "products" } } }
+    },
+    "btnMixed": {
+      "type": "ActionButton",
+      "props": { "label": "Reload Mixed (ragged)" },
+      "on": { "click": { "action": "loadDataset", "params": { "dataset": "mixed" } } }
+    },
+    "tables": {
+      "type": "StackRow",
+      "props": {
+        "gap": "lg",
+        "columns": {
+          "users": [
+            { "key": "name", "label": "Name" },
+            { "key": "email", "label": "Email" },
+            { "key": "role", "label": "Role" }
+          ],
+          "products": [
+            { "key": "sku", "label": "SKU" },
+            { "key": "price", "label": "Price" },
+            { "key": "stock", "label": "Stock" }
+          ],
+          "mixed": [
+            { "key": "name", "label": "Name" },
+            { "key": "email", "label": "Email" },
+            { "key": "phone", "label": "Phone" }
+          ]
+        }
+      },
+      "repeat": { "path": "/tables" },
+      "children": ["table"]
+    },
+    "table": { "type": "Table", "children": ["thead", "tbody"] },
+    "thead": { "type": "THead", "children": ["headerRow"] },
+    "headerRow": {
+      "type": "Tr",
+      "repeat": { "path": { "$item": "colDefs" } },
+      "children": ["headerCell"]
+    },
+    "headerCell": { "type": "ColumnHeader" },
+    "tbody": {
+      "type": "TBody",
+      "repeat": { "path": { "$item": "rows" }, "key": "__id" },
+      "children": ["tr"]
+    },
+    "tr": {
+      "type": "Tr",
+      "repeat": { "path": { "$item": "colDefs", "$scope": 1 } },
+      "children": ["cell"]
+    },
+    "cell": { "type": "DataCell" }
+  }
+}

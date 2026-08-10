@@ -391,6 +391,36 @@ describe("useResolvedPath", () => {
     expect(result.current).toBeUndefined();
   });
 
+  it("resolves $item with $scope against the parent scope", () => {
+    const { result } = renderHook(
+      () => useResolvedPath({ $item: "colDefs", $scope: 1 }),
+      {
+        wrapper: createWrapper({ scopes: ["/tables/0/rows/2", "/tables/0"] }),
+      },
+    );
+    expect(result.current).toBe("/tables/0/colDefs");
+  });
+
+  it("returns undefined for $item with out-of-range $scope", () => {
+    const { result } = renderHook(
+      () => useResolvedPath({ $item: "colDefs", $scope: 2 }),
+      {
+        wrapper: createWrapper({ scopes: ["/tables/0/rows/2", "/tables/0"] }),
+      },
+    );
+    expect(result.current).toBeUndefined();
+  });
+
+  it("returns undefined for $item with invalid $scope", () => {
+    const { result } = renderHook(
+      () => useResolvedPath({ $item: "colDefs", $scope: -1 }),
+      {
+        wrapper: createWrapper({ scopes: ["/tables/0/rows/2", "/tables/0"] }),
+      },
+    );
+    expect(result.current).toBeUndefined();
+  });
+
   it("resolves $state by reading the store at the pointer path", () => {
     const store = createStore({ activeList: "/fruits" });
     const { result } = renderHook(() => useResolvedPath({ $state: "/activeList" }), {
@@ -601,6 +631,31 @@ describe("useEmit", () => {
 
     expect(handler).toHaveBeenCalledWith(
       { path: "/items/3" },
+      expect.anything(),
+    );
+  });
+
+  it("resolves $item with $scope against an ancestor scope", async () => {
+    const store = createStore();
+    const handler = vi.fn();
+    const handlers = { del: handler };
+    const on = { click: { action: "del", params: { tablePath: { $item: "", $scope: 1 } } } };
+
+    const { result } = renderHook(() => useEmit(on), {
+      wrapper: createWrapper({
+        store,
+        handlers,
+        scopes: ["/tables/0/rows/2", "/tables/0"],
+        repeatIndex: 2,
+      }),
+    });
+
+    await act(async () => {
+      await result.current("click");
+    });
+
+    expect(handler).toHaveBeenCalledWith(
+      { tablePath: "/tables/0" },
       expect.anything(),
     );
   });

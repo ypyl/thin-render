@@ -11,7 +11,7 @@
 //     (each slot holds the results of rendering that slot's child elements)
 import type { Spec, SlotMap } from "./spec.js";
 import type { Store } from "./store.js";
-import { resolveRepeatPath } from "./expressions.js";
+import { resolveRepeatPath, scopeDepthOf } from "./expressions.js";
 
 /** Context passed to each registry function. */
 export type RenderContext = {
@@ -119,10 +119,13 @@ function walk(
 
   // ── Handle repeat ──
   if (element.repeat) {
+    // $item expressions resolve against the scope stack at $scope depth
+    // (innermost by default); scopes[-1] is undefined for invalid offsets,
+    // so the repeat resolves to nothing. "" at root behaves as before.
     const resolvedPath = resolveRepeatPath(
       element.repeat.path,
       () => store.getState(),
-      scopes[0] || undefined,
+      scopes[scopeDepthOf(element.repeat.path)],
     );
     if (!resolvedPath) return [];
 

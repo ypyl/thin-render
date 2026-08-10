@@ -10,13 +10,14 @@ import { getByPath } from "./store.js";
  *
  * - `{ $state: "/path" }` → `getByPath(getState(), "/path")` (read-once value)
  * - `{ $item: "field" }`  → `"${basePath}/field"` (absolute path string, not a value)
+ * - `{ $item: "field", $scope: N }` → resolved against the scope stack at depth N
  * - `{ $item: "" }`        → `basePath` (the repeat scope path itself)
  * - Plain objects recurse; all other values pass through.
  */
 export function resolveExpressions(
   params: Record<string, unknown>,
   getState: () => unknown,
-  basePath?: string,
+  scopes?: string[],
   index?: string | number,
 ): Record<string, unknown> {
   const out: Record<string, unknown> = {};
@@ -30,21 +31,42 @@ export function resolveExpressions(
       if (typeof obj.$state === "string") {
         out[key] = getByPath(getState(), obj.$state);
       } else if (typeof obj.$item === "string") {
-        out[key] = basePath
+        const base = scopes ? scopes[scopeDepth(obj.$scope)] : undefined;
+        out[key] = base
           ? obj.$item === ""
-            ? basePath
-            : `${basePath}/${obj.$item}`
+            ? base
+            : `${base}/${obj.$item}`
           : undefined;
       } else if ("$index" in obj) {
         out[key] = (obj.$index as boolean) ? index : undefined;
       } else {
-        out[key] = resolveExpressions(obj, getState, basePath, index);
+        out[key] = resolveExpressions(obj, getState, scopes, index);
       }
     } else {
       out[key] = val;
     }
   }
   return out;
+}
+
+/**
+ * Validate a `$scope` value into a stack depth. Absent → 0 (innermost scope,
+ * current behavior). Non-negative integers pass through. Any other value
+ * (negative, non-integer, string) → -1, which resolves to `undefined` when
+ * used as an array index — mirroring `usePath(offset)` out-of-range behavior.
+ */
+export function scopeDepth(scope: unknown): number {
+  if (scope === undefined) return 0;
+  if (typeof scope === "number" && Number.isInteger(scope) && scope >= 0) return scope;
+  return -1;
+}
+
+/** Extract the validated `$scope` depth from an expression object (0 for non-objects). */
+export function scopeDepthOf(expr: unknown): number {
+  if (expr !== null && typeof expr === "object" && !Array.isArray(expr)) {
+    return scopeDepth((expr as Record<string, unknown>).$scope);
+  }
+  return 0;
 }
 
 /**

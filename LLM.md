@@ -35,7 +35,7 @@ import type { Spec, UIElement, SlotMap, ComponentProps, Handler, Handlers, Regis
 | `SlotMap` | `Record<string, string \| string[]>` — slot name → child element id(s); record-form `children` |
 | `ActionBinding` | `{ action: string; params?: Record<string, unknown> }` — internal type (not re-exported) |
 | `OnMap` | `Record<string, ActionBinding \| ActionBinding[]>` — internal type (not re-exported) |
-| `RepeatConfig` | `{ path: string \| { $item: string } \| { $state: string }; key?: string }` — internal type (not re-exported) |
+| `RepeatConfig` | `{ path: string \| { $item: string } \| { $item: string, $scope?: number } \| { $state: string }; key?: string }` — internal type (not re-exported) |
 
 ### Hooks
 
@@ -100,7 +100,7 @@ const store = createStore({ /* initial state */ });
 
 `getByPath(state, path)` — standalone utility to read a nested value from any object by path. Used inside handlers: `getByPath(getState(), params.id)`
 
-`createStoreView(store, basePath)` — a path-prefixed view implementing the same `Store` interface: `get`/`set`/`subscribe` rebase the given path onto `basePath` (empty path → `basePath` exactly; leading `/` optional), and `getState()` returns the subtree snapshot at `basePath`. No data is copied and no listener registry is kept — subscriptions delegate, so writes outside the base subtree never notify view subscribers. Used to embed a nested spec package at a subtree of a parent store (see Pattern 10).
+`createStoreView(store, basePath)` — a path-prefixed view implementing the same `Store` interface: `get`/`set`/`subscribe` rebase the given path onto `basePath` (empty path → `basePath` exactly; leading `/` optional), and `getState()` returns the subtree snapshot at `basePath`. No data is copied and no listener registry is kept — subscriptions delegate, so writes outside the base subtree never notify view subscribers. Used to embed a nested spec package at a subtree of a parent store (see Pattern 11).
 
 Path syntax: JSON-Pointer-like, `/`-separated. Leading `/` optional. `""` = root.
 
@@ -147,6 +147,7 @@ const registry: GenericRegistry = {
 |---|:--:|:--:|:--:|
 | `{ $state: "/path" }` | ✓ read-once | ✓ subscribes | ✗ |
 | `{ $item: "field" }` | ✓ path str | ✓ context only | ✗ |
+| `{ $item: "field", $scope: N }` | ✓ path str | ✓ context only | ✗ |
 | `{ $item: "" }` | ✓ base path | ✓ base path | ✗ |
 | `{ $index: true }` | ✓ number | ✗ | ✗ |
 
@@ -155,6 +156,7 @@ const registry: GenericRegistry = {
 - `$item` in `repeat.path` uses context only — no subscription, relies on parent re-render
 - Props are ALWAYS static — components resolve expressions themselves
 - `$item: ""` returns the repeat base path (e.g., `/items/3`); `$item: "field"` appends (e.g., `/items/3/field`)
+- `$scope` on an `$item` expression climbs the scope stack: `0` = innermost (default), `1` = parent, `2` = grandparent… — the expression-side mirror of `usePath(offset)`. Out-of-range or invalid `$scope` resolves to `undefined`. Valid in `on.params` and `repeat.path` only (props are static)
 - `$index: false` → `undefined`; use to explicitly opt out
 
 ## Patterns
@@ -316,9 +318,34 @@ function DataCell(_props: ComponentProps) {
 }
 ```
 
-Repeat scopes form a stack (innermost first); `usePath(offset)` walks it — `0` is current, `1` is the parent repeat, beyond the stack is `undefined`. The nested `Renderer` boundary resets the stack, so no scope leaks across renderers. `$item`, relative binds, and `$index` still resolve against the innermost scope only. A `DataCell` re-renders only on writes to its own value path; changing `/colDefs` (a new column set) re-renders only the repeats, with no spec regeneration. `renderGeneric` builders get the same stack as `ctx.scopes`. If you cannot add a custom cell component, generate the spec from the columns instead — that remains a valid fallback.
+Repeat scopes form a stack (innermost first); `usePath(offset)` walks it — `0` is current, `1` is the parent repeat, beyond the stack is `undefined`. The nested `Renderer` boundary resets the stack, so no scope leaks across renderers. Relative binds and `$index` resolve against the innermost scope only; `$item` can climb with `$scope` (see Pattern 10). A `DataCell` re-renders only on writes to its own value path; changing `/colDefs` (a new column set) re-renders only the repeats, with no spec regeneration. `renderGeneric` builders get the same stack as `ctx.scopes`. If you cannot add a custom cell component, generate the spec from the columns instead — that remains a valid fallback.
 
-### 10. Nested Spec Package (store view + parent bridge)
+### 10. Stacked Tables (scope offset)
+
+Render multiple tables with different column sets at once from one static spec. Each table subtree in the store carries its own rows and colDefs. The columns can be **declared in the spec** (the Stacked Tables demo does this) or derived from data — either way the `colDefs` live in the store so the repeats can iterate them. Declared-in-spec: put the column list in the element's `props.columns` (keyed by table name) and seed each table's `colDefs` once at startup; the load handler writes only rows, never headers:
+
+```ts
+// spec declares: tables.props.columns = { users: [{ key: "name", label: "Name" }, ...], ... }
+store.set("/tables/users/colDefs", columns.users);   // seeded once from the spec
+store.set("/tables/users/rows", [...]);              // data loads rows only
+```
+
+Rows may carry fields the spec does not declare (e.g. `id`, `active`) — only the declared columns render, so extra data is silently ignored.
+
+```json
+{ "type": "StackRow", "repeat": { "path": "/tables" }, "children": ["table"] },
+{ "type": "Table", "children": ["thead", "tbody"] },
+{ "type": "THead", "children": ["headerRow"] },
+{ "type": "Tr", "repeat": { "path": { "$item": "colDefs" } }, "children": ["headerCell"] },
+{ "type": "ColumnHeader" },
+{ "type": "TBody", "repeat": { "path": { "$item": "rows" }, "key": "__id" }, "children": ["tr"] },
+{ "type": "Tr", "repeat": { "path": { "$item": "colDefs", "$scope": 1 } }, "children": ["cell"] },
+{ "type": "DataCell" }
+```
+
+The body row sits one repeat deeper than the table scope, so its column repeat must climb one level: `$scope: 1` resolves `$item: "colDefs"` against the parent scope — `/tables/products/colDefs`, not `/tables/products/rows/2/colDefs`. The header row sits directly in the table scope and needs no offset. Cells bind values across the two scopes exactly as in Pattern 9. Loading a new dataset writes only that table's rows (and, if you derive columns, its colDefs), so other tables re-render nothing. `$scope` works the same in action `params` — e.g. a delete button on a row passing `{ table: { $item: "", $scope: 1 } }` to identify its table.
+
+### 11. Nested Spec Package (store view + parent bridge)
 
 Embed a self-contained spec package (own spec, registry, components, handlers) at **multiple places** of a bigger spec sharing **one store**. The child data is a subtree of the parent's JSON (`/widgets/0/data`); the boundary component in the parent registry gives the child a rebased view of the parent store and a bridge to parent handlers:
 

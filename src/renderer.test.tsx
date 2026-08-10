@@ -328,6 +328,75 @@ describe("RepeatChildren", () => {
     expect(Spy.called).toHaveLength(6);
   });
 
+  it("renders rows × columns grid with $item $scope against sibling colDefs", () => {
+    const store = createStore({
+      tables: [
+        {
+          rows: [{ name: "A", email: "a@x" }, { name: "B", email: "b@x" }],
+          colDefs: [{ key: "name" }, { key: "email" }],
+        },
+      ],
+    });
+    const Spy = makeSpy();
+    const cellScopes: { col: string; row: string }[] = [];
+    function CellSpy(_props: ComponentProps) {
+      cellScopes.push({ col: usePath(), row: usePath(1) });
+      return null;
+    }
+    const registry: Registry = { Spy, CellSpy };
+    const spec: Spec = {
+      root: "tableWrap",
+      elements: {
+        tableWrap: { type: "Spy", repeat: { path: "/tables" }, children: ["headerRow", "tbody"] },
+        headerRow: { type: "Spy", repeat: { path: { $item: "colDefs" } }, children: ["headerCell"] },
+        headerCell: { type: "Spy" },
+        tbody: { type: "Spy", repeat: { path: { $item: "rows" } }, children: ["tr"] },
+        tr: { type: "Spy", repeat: { path: { $item: "colDefs", $scope: 1 } }, children: ["cell"] },
+        cell: { type: "CellSpy" },
+      },
+    };
+
+    render(<Renderer spec={spec} registry={registry} store={store} />);
+
+    // Spy: tableWrap(1) + headerRow(1) + headerCell(2) + tbody(1) + tr(2) = 7
+    expect(Spy.called).toHaveLength(7);
+    // Cells resolve their column scope (innermost) and row scope (parent).
+    expect(cellScopes).toEqual([
+      { col: "/tables/0/colDefs/0", row: "/tables/0/rows/0" },
+      { col: "/tables/0/colDefs/1", row: "/tables/0/rows/0" },
+      { col: "/tables/0/colDefs/0", row: "/tables/0/rows/1" },
+      { col: "/tables/0/colDefs/1", row: "/tables/0/rows/1" },
+    ]);
+  });
+
+  it("renders nothing for $item repeat with out-of-range $scope", () => {
+    const store = createStore({
+      tables: [
+        {
+          rows: [{ name: "A" }],
+          colDefs: [{ key: "name" }],
+        },
+      ],
+    });
+    const Spy = makeSpy();
+    const registry: Registry = { Spy };
+    const spec: Spec = {
+      root: "tableWrap",
+      elements: {
+        tableWrap: { type: "Spy", repeat: { path: "/tables" }, children: ["tbody"] },
+        tbody: { type: "Spy", repeat: { path: { $item: "rows" } }, children: ["tr"] },
+        tr: { type: "Spy", repeat: { path: { $item: "colDefs", $scope: 5 } }, children: ["cell"] },
+        cell: { type: "Spy" },
+      },
+    };
+
+    render(<Renderer spec={spec} registry={registry} store={store} />);
+
+    // tableWrap(1) + tbody(1) + tr rows repeat (1) — the $scope-5 column
+    // repeat resolves to undefined, so no tr children render.
+    expect(Spy.called).toHaveLength(3);
+  });
+
   // ── $state dynamic repeat target ──
 
   it("renders repeat via $state dynamic target", () => {

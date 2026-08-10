@@ -18,7 +18,7 @@ import {
 } from "./contexts.js";
 import type { OnMap, ActionBinding } from "./spec.js";
 import { getByPath } from "./store.js";
-import { resolveExpressions, resolveRepeatPath } from "./expressions.js";
+import { resolveExpressions, resolveRepeatPath, scopeDepth } from "./expressions.js";
 
 // ── Repeat scope contexts (used by renderer + hooks) ──────────────
 
@@ -145,8 +145,9 @@ export function useEmit(on?: OnMap): (event: string) => Promise<void> | void {
   if (!ctxRaw) throw new Error("useEmit must be used within an ActionProvider");
   const ctx: ActionContextValue = ctxRaw;
 
-  // Capture repeat scope at the element's position (static per element)
-  const repeatPath = usePath();
+  // Capture the repeat scope stack at the element's position (static per element)
+  // so $item/$scope in params can resolve against ancestor scopes at dispatch.
+  const scopes = useContext(PathContext);
   const repeatIdx = useRepeatIndex();
 
   return useMemo(() => {
@@ -175,7 +176,7 @@ export function useEmit(on?: OnMap): (event: string) => Promise<void> | void {
           continue;
         }
         const resolved = b.params
-          ? resolveExpressions(b.params, ctx.getState, repeatPath, repeatIdx)
+          ? resolveExpressions(b.params, ctx.getState, scopes, repeatIdx)
           : {};
         await handler(resolved, {
           getState: ctx.getState,
@@ -184,7 +185,7 @@ export function useEmit(on?: OnMap): (event: string) => Promise<void> | void {
       }
     }
     return emit;
-  }, [on, ctx, repeatPath, repeatIdx]);
+  }, [on, ctx, scopes, repeatIdx]);
 }
 
 export type { ActionContextValue };
@@ -204,7 +205,10 @@ export function useResolvedPath(expr: unknown): string | undefined {
     !Array.isArray(expr) &&
     typeof (expr as Record<string, unknown>).$item === "string"
   ) {
-    const base = usePath();
+    const item = expr as { $item: string; $scope?: unknown };
+    // usePath(-1) returns undefined for invalid $scope (negative/non-integer),
+    // mirroring out-of-range behavior; omitted $scope defaults to the innermost.
+    const base = usePath(scopeDepth(item.$scope));
     return resolveRepeatPath(expr, undefined, base);
   }
 

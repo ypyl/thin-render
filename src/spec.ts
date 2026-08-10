@@ -20,9 +20,16 @@ export interface ActionBinding {
 /** Event→action map declared on an element. */
 export type OnMap = Record<string, ActionBinding | ActionBinding[]>;
 
-/** $item expression: resolved against the current PathContext. */
+/**
+ * $item expression: resolved against the current PathContext. Optional
+ * `$scope` selects the scope-stack depth to resolve against: 0 is the
+ * innermost scope (default), 1 the parent scope, 2 the grandparent, and so
+ * on — mirroring `usePath(offset)`. Values that are not non-negative
+ * integers resolve to `undefined`.
+ */
 export interface ItemExpression {
   $item: string;
+  $scope?: number;
 }
 
 /** $state expression: resolved by reading the store value at the given path. */

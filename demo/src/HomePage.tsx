@@ -82,6 +82,12 @@ const CASES = [
     description: "A table whose columns are decided at runtime. Switch datasets and the rows and columns change together, without a reload.",
   },
   {
+    route: "/stacked-tables",
+    emoji: "🗂️",
+    title: "Stacked Tables",
+    description: "Multiple tables with different columns rendered at once from one static spec — the spec declares each table's columns (extra data fields are never rendered), and data loads only the rows.",
+  },
+  {
     route: "/nested-repeat",
     emoji: "🪆",
     title: "Nested Repeat",

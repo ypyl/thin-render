@@ -10,6 +10,8 @@ interface WrapperOptions {
   handlers?: Handlers;
   repeatPath?: string;
   repeatIndex?: number;
+  /** Full scope stack (innermost first) for $item/$scope resolution tests. */
+  scopes?: string[];
 }
 
 /** Creates a wrapper component that provides store, actions, and repeat scope. */
@@ -19,9 +21,12 @@ export function createWrapper(opts: WrapperOptions = {}) {
 
   return function Wrapper({ children }: { children: ReactNode }) {
     let inner = children;
-    if (opts.repeatPath !== undefined || opts.repeatIndex !== undefined) {
+    const scopes =
+      opts.scopes ?? (opts.repeatPath !== undefined ? [opts.repeatPath] : undefined);
+    const hasRepeatScope = scopes !== undefined || opts.repeatIndex !== undefined;
+    if (hasRepeatScope) {
       inner = (
-        <PathContext.Provider value={[opts.repeatPath ?? ""]}>
+        <PathContext.Provider value={scopes ?? [""]}>
           <RepeatIndexContext.Provider value={opts.repeatIndex}>
             {inner}
           </RepeatIndexContext.Provider>

@@ -331,6 +331,58 @@ describe("renderGeneric", () => {
     expect(result[1]).toHaveLength(1);
   });
 
+  it("repeat with $item and $scope offset resolves against ancestor scope", () => {
+    const spec: Spec = {
+      root: "tableWrap",
+      elements: {
+        tableWrap: { type: "Wrapper", repeat: { path: "/tables" }, children: ["tbody"] },
+        tbody: { type: "Wrapper", repeat: { path: { $item: "rows" } }, children: ["tr"] },
+        tr: { type: "Wrapper", repeat: { path: { $item: "colDefs", $scope: 1 } }, children: ["cell"] },
+        cell: { type: "Cell" },
+      },
+    };
+    const store = makeStore({
+      tables: [
+        { rows: [{}, {}], colDefs: [{ key: "a" }, { key: "b" }] },
+      ],
+    });
+    const registry: GenericRegistry = {
+      Wrapper: (_p, children) => children,
+      Cell: () => "c",
+    };
+    const result = renderGeneric(spec, store, registry) as unknown[][][];
+    // One table → tbody → one tr per row (2), each with one cell per
+    // sibling colDefs entry (2) resolved via $scope: 1.
+    expect(result).toHaveLength(1);
+    expect(result[0]).toHaveLength(2);
+    expect(result[0][0]).toEqual(["c", "c"]);
+    expect(result[0][1]).toEqual(["c", "c"]);
+  });
+
+  it("repeat with out-of-range $scope renders no children", () => {
+    const spec: Spec = {
+      root: "tableWrap",
+      elements: {
+        tableWrap: { type: "Wrapper", repeat: { path: "/tables" }, children: ["tbody"] },
+        tbody: { type: "Wrapper", repeat: { path: { $item: "rows" } }, children: ["tr"] },
+        tr: { type: "Wrapper", repeat: { path: { $item: "colDefs", $scope: 5 } }, children: ["cell"] },
+        cell: { type: "Cell" },
+      },
+    };
+    const store = makeStore({
+      tables: [{ rows: [{}], colDefs: [{ key: "a" }] }],
+    });
+    const registry: GenericRegistry = {
+      Wrapper: (_p, children) => children,
+      Cell: () => "c",
+    };
+    const result = renderGeneric(spec, store, registry) as unknown[][][];
+    // The $scope-5 column repeat resolves to undefined → tr has no children.
+    expect(result).toHaveLength(1);
+    expect(result[0]).toHaveLength(1);
+    expect(result[0][0]).toEqual([]);
+  });
+
   it("repeat over non-iterable renders empty children", () => {
     const spec: Spec = {
       root: "list",

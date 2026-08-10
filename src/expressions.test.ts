@@ -1,6 +1,6 @@
 // expressions.test.ts — pure expression resolution tests.
 import { describe, it, expect, vi } from "vitest";
-import { resolveExpressions, resolveRepeatPath } from "./expressions";
+import { resolveExpressions, resolveRepeatPath, scopeDepth, scopeDepthOf } from "./expressions";
 
 // ── resolveExpressions ────────────────────────────────────────────
 
@@ -34,7 +34,7 @@ describe("resolveExpressions", () => {
     const result = resolveExpressions(
       { label: { $item: "name" } },
       getState,
-      "/items/2",
+      ["/items/2"],
     );
     expect(result.label).toBe("/items/2/name");
   });
@@ -43,7 +43,7 @@ describe("resolveExpressions", () => {
     const result = resolveExpressions(
       { path: { $item: "" } },
       getState,
-      "/items/2",
+      ["/items/2"],
     );
     expect(result.path).toBe("/items/2");
   });
@@ -57,7 +57,7 @@ describe("resolveExpressions", () => {
     const result = resolveExpressions(
       { idx: { $index: true } },
       getState,
-      "/base",
+      ["/base"],
       5,
     );
     expect(result.idx).toBe(5);
@@ -67,7 +67,7 @@ describe("resolveExpressions", () => {
     const result = resolveExpressions(
       { idx: { $index: false } },
       getState,
-      "/base",
+      ["/base"],
       5,
     );
     expect(result.idx).toBeUndefined();
@@ -77,7 +77,7 @@ describe("resolveExpressions", () => {
     const result = resolveExpressions(
       { idx: { $index: true } },
       getState,
-      "/base",
+      ["/base"],
     );
     expect(result.idx).toBeUndefined();
   });
@@ -108,10 +108,96 @@ describe("resolveExpressions", () => {
     const result = resolveExpressions(
       { name: "static", value: { $state: "/x" }, idx: { $index: true } },
       getState,
-      "/base",
+      ["/base"],
       0,
     );
     expect(result).toEqual({ name: "static", value: "val", idx: 0 });
+  });
+
+  // ── $scope offset ────────────────────────────────────────────────
+
+  it("resolves $item with $scope against the parent scope", () => {
+    const result = resolveExpressions(
+      { colDefs: { $item: "colDefs", $scope: 1 } },
+      getState,
+      ["/tables/0/rows/2", "/tables/0"],
+    );
+    expect(result.colDefs).toBe("/tables/0/colDefs");
+  });
+
+  it("resolves $item with $scope and empty field to the ancestor base", () => {
+    const result = resolveExpressions(
+      { table: { $item: "", $scope: 1 } },
+      getState,
+      ["/tables/0/rows/2", "/tables/0"],
+    );
+    expect(result.table).toBe("/tables/0");
+  });
+
+  it("resolves $item with $scope 2 against the grandparent scope", () => {
+    const result = resolveExpressions(
+      { root: { $item: "meta", $scope: 2 } },
+      getState,
+      ["/a/0/b/1/c/2", "/a/0/b/1", "/a/0"],
+    );
+    expect(result.root).toBe("/a/0/meta");
+  });
+
+  it("resolves $item with out-of-range $scope to undefined", () => {
+    const result = resolveExpressions(
+      { colDefs: { $item: "colDefs", $scope: 5 } },
+      getState,
+      ["/tables/0/rows/2", "/tables/0"],
+    );
+    expect(result.colDefs).toBeUndefined();
+  });
+
+  it("resolves $item with invalid $scope to undefined", () => {
+    for (const bad of [-1, 1.5, "1", true]) {
+      const result = resolveExpressions(
+        { colDefs: { $item: "colDefs", $scope: bad } },
+        getState,
+        ["/tables/0/rows/2", "/tables/0"],
+      );
+      expect(result.colDefs).toBeUndefined();
+    }
+  });
+
+  it("resolves $item with $scope 0 explicitly like the default", () => {
+    const result = resolveExpressions(
+      { label: { $item: "name", $scope: 0 } },
+      getState,
+      ["/items/2"],
+    );
+    expect(result.label).toBe("/items/2/name");
+  });
+
+  it("resolves $item with $scope inside a nested params object", () => {
+    const result = resolveExpressions(
+      { meta: { table: { $item: "id", $scope: 1 } } },
+      getState,
+      ["/tables/0/rows/2", "/tables/0"],
+    );
+    expect(result.meta).toEqual({ table: "/tables/0/id" });
+  });
+
+  it("ignores $scope on $state expressions", () => {
+    const result = resolveExpressions(
+      { text: { $state: "/x", $scope: 1 } },
+      getState,
+      ["/tables/0/rows/2", "/tables/0"],
+    );
+    expect(result.text).toBe("val");
+  });
+
+  it("ignores $scope on $index expressions", () => {
+    const result = resolveExpressions(
+      { idx: { $index: true, $scope: 1 } },
+      getState,
+      ["/base"],
+      5,
+    );
+    expect(result.idx).toBe(5);
   });
 });
 
@@ -161,5 +247,46 @@ describe("resolveRepeatPath", () => {
 
   it("returns undefined for null", () => {
     expect(resolveRepeatPath(null, getState)).toBeUndefined();
+  });
+});
+
+// ── scopeDepth / scopeDepthOf ─────────────────────────────────────
+
+describe("scopeDepth", () => {
+  it("defaults absent scope to 0", () => {
+    expect(scopeDepth(undefined)).toBe(0);
+  });
+
+  it("passes non-negative integers through", () => {
+    expect(scopeDepth(0)).toBe(0);
+    expect(scopeDepth(2)).toBe(2);
+  });
+
+  it("maps invalid values to -1", () => {
+    expect(scopeDepth(-1)).toBe(-1);
+    expect(scopeDepth(1.5)).toBe(-1);
+    expect(scopeDepth("1")).toBe(-1);
+    expect(scopeDepth(true)).toBe(-1);
+    expect(scopeDepth(null)).toBe(-1);
+  });
+});
+
+describe("scopeDepthOf", () => {
+  it("reads $scope from an expression object", () => {
+    expect(scopeDepthOf({ $item: "colDefs", $scope: 2 })).toBe(2);
+  });
+
+  it("defaults to 0 for expression objects without $scope", () => {
+    expect(scopeDepthOf({ $item: "colDefs" })).toBe(0);
+  });
+
+  it("defaults to 0 for non-objects", () => {
+    expect(scopeDepthOf("/items")).toBe(0);
+    expect(scopeDepthOf(null)).toBe(0);
+    expect(scopeDepthOf(undefined)).toBe(0);
+  });
+
+  it("maps invalid $scope to -1", () => {
+    expect(scopeDepthOf({ $item: "colDefs", $scope: -2 })).toBe(-1);
   });
 });

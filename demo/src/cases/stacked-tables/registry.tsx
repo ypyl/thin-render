@@ -1,4 +1,4 @@
-// dynamic-columns/registry.tsx — components used by the Dynamic Columns demo.
+// stacked-tables/registry.tsx — components used by the Stacked Tables demo.
 import { CaseContainer } from "../../components/CaseContainer";
 import { StackRow } from "../../components/StackRow";
 import { ActionButton } from "../../components/ActionButton";

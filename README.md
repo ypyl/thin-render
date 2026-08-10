@@ -124,6 +124,7 @@ The `emit("click")` closure is built per-element by the renderer, resolves param
 
 - `{ $state: "/path" }` — reads the current value from the store
 - `{ $item: "field" }` — resolves to the absolute state path (e.g., `/items/5/field`)
+- `{ $item: "field", $scope: N }` — resolves against an ancestor repeat scope (`$scope: 1` = parent, `2` = grandparent…; default `0`)
 - `{ $item: "" }` — resolves to the repeat base path (e.g., `/items/5`)
 - `{ $index: true }` — resolves to the numeric repeat index
 
@@ -135,7 +136,7 @@ Built-in `setState` action is always available: `{ action: "setState", params: {
 { "type": "Card", "repeat": { "path": "/items" }, "children": ["row"] }
 ```
 
-Renders `row` once per item in `/items`. Inside a repeat, components can use `usePath()` to get the current item's base path (`/items/0`, `/items/1`, etc.) — which is automatically composed with relative paths like `useBound("name")` to read from `/items/0/name`. Nested repeats push onto a scope stack: `usePath(1)` reads the *parent* repeat's base path, enabling rows × columns grids from a fully static spec (see the **Dynamic Columns** demo case) — `usePath(n)` returns `undefined` beyond the stack.
+Renders `row` once per item in `/items`. Inside a repeat, components can use `usePath()` to get the current item's base path (`/items/0`, `/items/1`, etc.) — which is automatically composed with relative paths like `useBound("name")` to read from `/items/0/name`. Nested repeats push onto a scope stack: `usePath(1)` reads the *parent* repeat's base path, enabling rows × columns grids from a fully static spec (see the **Dynamic Columns** demo case) — `usePath(n)` returns `undefined` beyond the stack. Repeat paths themselves can climb the same stack with `{ "$item": "colDefs", "$scope": 1 }`, resolving against the *parent* scope — this is how the **Stacked Tables** demo renders each table's columns from the table scope while nested inside its rows.
 
 For stable React keys across re-renders, provide a `key` field on the repeat config pointing to a unique field on each item (e.g., `"repeat": { "path": "/items", "key": "id" }`). Without it, the array index is used, which breaks on reorder or delete. The unique ID must come from your data — thin-render does not auto-generate IDs.
 
@@ -314,7 +315,7 @@ interface UIElement {
   props?: Record<string, unknown>;
   children?: string[] | SlotMap;  // ordered children or named slots
   on?: Record<string, ActionBinding | ActionBinding[]>;
-  repeat?: RepeatConfig;  // path: string | { $item: string } | { $state: string }; key?: string
+  repeat?: RepeatConfig;  // path: string | { $item: string, $scope?: number } | { $state: string }; key?: string
 }
 
 interface ActionBinding {
@@ -325,7 +326,7 @@ interface ActionBinding {
 
 ## Demo
 
-The demo app (`demo/`) has nineteen self-contained cases:
+The demo app (`demo/`) has twenty self-contained cases:
 
 | Case | What it shows | Source |
 |-----|---------------|--------|
@@ -342,6 +343,7 @@ The demo app (`demo/`) has nineteen self-contained cases:
 | **Drag & Drop** | Sortable table: drag to reorder, plus add, remove, and edit. | [`DndTableCase.tsx`](./demo/src/cases/dnd-table/DndTableCase.tsx) · [`buildSpec.ts`](./demo/src/cases/dnd-table/buildSpec.ts) · [`registry.ts`](./demo/src/cases/dnd-table/registry.ts) |
 | **Mantine Table** | Paginated table, 300 rows with 10 per page. | [`MantineTableCase.tsx`](./demo/src/cases/mantine-table/MantineTableCase.tsx) · [`buildSpec.ts`](./demo/src/cases/mantine-table/buildSpec.ts) · [`handlers.ts`](./demo/src/cases/mantine-table/handlers.ts) · [`registry.ts`](./demo/src/cases/mantine-table/registry.ts) |
 | **Dynamic Columns** | A table whose columns are decided at runtime; switching datasets changes the column set. | [`DynamicColumnsCase.tsx`](./demo/src/cases/dynamic-columns/DynamicColumnsCase.tsx) · [`spec.json`](./demo/src/cases/dynamic-columns/spec.json) · [`handlers.ts`](./demo/src/cases/dynamic-columns/handlers.ts) · [`registry.tsx`](./demo/src/cases/dynamic-columns/registry.tsx) |
+| **Stacked Tables** | Multiple tables with different columns rendered at once from one static spec — the spec declares each table's columns (extra data fields are never rendered), and data loads only the rows. | [`StackedTablesCase.tsx`](./demo/src/cases/stacked-tables/StackedTablesCase.tsx) · [`spec.json`](./demo/src/cases/stacked-tables/spec.json) · [`handlers.ts`](./demo/src/cases/stacked-tables/handlers.ts) · [`registry.tsx`](./demo/src/cases/stacked-tables/registry.tsx) |
 | **Nested Repeat** | Categories with editable items inside each category. | [`NestedRepeatCase.tsx`](./demo/src/cases/nested-repeat/NestedRepeatCase.tsx) · [`spec.json`](./demo/src/cases/nested-repeat/spec.json) · [`registry.tsx`](./demo/src/cases/nested-repeat/registry.tsx) |
 | **Named Slots** | A page layout assembled from named areas, plus cards generated from a list. | [`NamedSlotsCase.tsx`](./demo/src/cases/named-slots/NamedSlotsCase.tsx) · [`spec.json`](./demo/src/cases/named-slots/spec.json) · [`registry.tsx`](./demo/src/cases/named-slots/registry.tsx) |
 | **DOCX Export** | Edit data, then export it as a Word document. | [`DocxExportCase.tsx`](./demo/src/cases/docx-export/DocxExportCase.tsx) · [`spec.json`](./demo/src/cases/docx-export/spec.json) · [`docxSpec.ts`](./demo/src/cases/docx-export/docxSpec.ts) · [`docxRegistry.ts`](./demo/src/cases/docx-export/docxRegistry.ts) · [`registry.ts`](./demo/src/cases/docx-export/registry.ts) |

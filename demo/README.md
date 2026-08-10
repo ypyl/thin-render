@@ -29,6 +29,7 @@ npm run dev    # starts at http://localhost:5173
 | **Drag & Drop** | Sortable table: drag to reorder, plus add, remove, and edit. |
 | **Mantine Table** | Paginated table, 300 rows with 10 per page. |
 | **Dynamic Columns** | A table whose columns are decided at runtime; switching datasets changes the column set. |
+| **Stacked Tables** | Multiple tables with different columns rendered at once from one static spec — the spec declares each table's columns (extra data fields are never rendered), and data loads only the rows. |
 | **Nested Repeat** | Categories with editable items inside each category. |
 | **Named Slots** | A page layout assembled from named areas, plus cards generated from a list. |
 | **DOCX Export** | Edit data, then export it as a Word document. |
