@@ -4,7 +4,7 @@ A ~1,250-line spec-driven renderer with **granular per-path re-renders** for Rea
 
 Built as a minimal alternative to `@json-render/react`, dropping AI streaming, Zod validation, directives, devtools, and multi-framework output. Just the rendering core, a path-based store, an action system, and a generic renderer for non-React output.
 
-**[Live demo →](https://ypyl.github.io/thin-render/)**
+**[Live demo →](https://ypyl.github.io/thin-render/)** · **[npm →](https://www.npmjs.com/package/thin-render)**
 
 ## Why
 
