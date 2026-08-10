@@ -1,6 +1,7 @@
-## Purpose
-The $item and $index expressions resolve to absolute store path strings and numeric indexes in action params at dispatch time.
-## Requirements
+# item-expression-action Delta
+
+## MODIFIED Requirements
+
 ### Requirement: Expression objects resolve in action params at dispatch time
 `useEmit` SHALL resolve expression objects in action `params` at dispatch time via `resolveExpressions` (src/expressions.ts). Values of the form `{ $item: "<field>" }` SHALL resolve to the absolute state path `${basePath}/${field}`; when `<field>` is the empty string `""`, they SHALL resolve to `basePath` itself. When the expression carries a `$scope` number, `$item` SHALL resolve against the scope-stack entry at that depth instead of the innermost scope: `$scope` `0` is the innermost scope, `1` the parent scope, and so on; when omitted it SHALL default to `0`. A `$scope` that is not a non-negative integer within the stack bounds SHALL resolve to `undefined`. Resolution SHALL be pure string concatenation — no store read, no subscription. When no scope is available at the resolved depth (`basePath` is undefined), `$item` SHALL resolve to `undefined`.
 
@@ -57,4 +58,3 @@ The $item and $index expressions resolve to absolute store path strings and nume
 #### Scenario: useMemo stays stable for a fixed-position element
 - **WHEN** an element at repeat index 5 re-renders for unrelated reasons (its own useValue fires)
 - **THEN** the `useEmit` `useMemo` does NOT recompute (path `/items/5` and index 5 unchanged)
-

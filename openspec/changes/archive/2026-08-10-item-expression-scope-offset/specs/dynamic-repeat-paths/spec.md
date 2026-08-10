@@ -1,8 +1,7 @@
-# dynamic-repeat-paths Specification
+# dynamic-repeat-paths Delta
 
-## Purpose
-Repeat paths accept `$item` and `$state` expressions in addition to plain strings, enabling dynamic and nested repeat targets resolved at render time.
-## Requirements
+## MODIFIED Requirements
+
 ### Requirement: useResolvedPath resolves repeat.path expressions
 The `useResolvedPath(expr)` hook SHALL accept a value that is a plain string, `{ $item: "<field>" }`, `{ $item: "<field>", $scope: <number> }`, or `{ $state: "<path>" }`. When `expr` is a string, it SHALL return it unchanged. When `expr` is `{ $item: "<field>" }` (with or without `$scope`), it SHALL resolve against the `PathContext` scope stack without a store subscription: `$scope` SHALL select the stack depth to resolve against, where `0` is the innermost scope, `1` the parent scope, `2` the grandparent, and so on; when `$scope` is omitted it SHALL default to `0`. A `$scope` that is not a non-negative integer within the stack bounds SHALL resolve to `undefined`, mirroring `usePath(offset)`. When `expr` is `{ $state: "<path>" }`, it SHALL read the value at `<path>` from the store via `useValue` and return it; this creates a store subscription to `<path>`. When `expr` does not match any recognized shape, it SHALL return `undefined`.
 
@@ -54,21 +53,6 @@ The `useResolvedPath(expr)` hook SHALL accept a value that is a plain string, `{
 - **WHEN** `useResolvedPath({ other: "value" })` is called
 - **THEN** it returns `undefined`
 
-### Requirement: RepeatConfig.path accepts expression types
-The `RepeatConfig` interface's `path` field SHALL accept `string | ItemExpression | StateExpression`. Plain strings SHALL continue to work as absolute store paths (backward compatible). The expression types are declared in `src/spec.ts` alongside the `Spec` types.
-
-#### Scenario: String path still valid
-- **WHEN** a spec has `repeat: { path: "/items" }`
-- **THEN** the repeat renders normally, iterating over the array at `/items`
-
-#### Scenario: $item expression in JSON spec
-- **WHEN** a spec has `repeat: { path: { $item: "subitems" } }` on an element inside a repeat at `/items/0`
-- **THEN** the repeat iterates over the array at `/items/0/subitems`
-
-#### Scenario: $state expression in JSON spec
-- **WHEN** a spec has `repeat: { path: { $state: "/activeList" } }` and the store has `/activeList = "/fruits"`
-- **THEN** the repeat iterates over the array at `/fruits`
-
 ### Requirement: Nested repeats compose via $item resolution
 When a `RepeatChildren` renders elements that themselves have a `repeat` with a `$item` expression, the inner repeat SHALL resolve against the fully-qualified path set by the outer repeat's `RepeatScope`. This SHALL work for arbitrarily deep nesting. When the inner `$item` expression carries a `$scope` offset, it SHALL resolve against the scope stack at that depth, allowing an inner repeat to target data in an ancestor scope (e.g. a sibling field of a row's parent record).
 
@@ -83,4 +67,3 @@ When a `RepeatChildren` renders elements that themselves have a `repeat` with a 
 #### Scenario: Inner repeat with $scope targets ancestor sibling data
 - **WHEN** an outer repeat at `/tables` scopes item 0 to `/tables/0` with `{ rows: [...], colDefs: [...] }`, a row repeat at `{ $item: "rows" }` scopes row 2 to `/tables/0/rows/2`, and an inner element has `repeat: { path: { $item: "colDefs", $scope: 1 } }`
 - **THEN** the inner repeat iterates the array at `/tables/0/colDefs`, rendering one child per column, each scoped to `/tables/0/colDefs/N`
-
