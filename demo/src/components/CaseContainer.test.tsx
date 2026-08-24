@@ -35,7 +35,7 @@ const baseElement = {
 
 function renderCase(element: ComponentProps["element"]) {
   return render(
-    <CaseContainer element={element}>
+    <CaseContainer element={element} emit={() => {}}>
       <span>content</span>
     </CaseContainer>
   );
