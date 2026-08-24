@@ -27,6 +27,7 @@ export function buildDetailModalSpec(): Spec {
       container: {
         type: "CaseContainer",
         props: {
+          sourceFolder: "detail-modal",
           title: "Detail Modal Demo",
           description: "Click Details on a row to load that item's full record from a simulated server. A brief loading indicator appears, then the record opens in a popup.",
           technicalDescription: "Each row has a Details button. Clicking it simulates a network request: a loading indicator appears, and when the response arrives a popup opens with the item's full record. The popup has its own Close button and its content is loaded per item, on demand.",

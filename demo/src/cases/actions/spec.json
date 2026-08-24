@@ -3,30 +3,59 @@
   "elements": {
     "card": {
       "type": "CaseContainer",
-      "props": { "title": "Action Dispatch", "description": "A button that records the current time when clicked. The saved timestamp appears next to it.", "technicalDescription": "The page shows a Save Document button and a read-only timestamp. Clicking the button records the current time and displays it right away. The timestamp is part of the page's data, so it survives across clicks." },
-      "children": ["body"]
+      "props": {
+        "title": "Action Dispatch",
+        "description": "A button that records the current time when clicked. The saved timestamp appears next to it.",
+        "technicalDescription": "The page shows a Save Document button and a read-only timestamp. Clicking the button records the current time and displays it right away. The timestamp is part of the page's data, so it survives across clicks.",
+        "sourceFolder": "actions"
+      },
+      "children": [
+        "body"
+      ]
     },
     "body": {
       "type": "StackRow",
-      "props": { "gap": "md", "align": "flex-start" },
-      "children": ["toggleBtn", "btn", "status"]
+      "props": {
+        "gap": "md",
+        "align": "flex-start"
+      },
+      "children": [
+        "toggleBtn",
+        "btn",
+        "status"
+      ]
     },
     "toggleBtn": {
       "type": "EditToggle",
       "on": {
-        "edit": { "action": "startEdit" },
-        "save": { "action": "saveEdit" },
-        "cancel": { "action": "cancelEdit" }
+        "edit": {
+          "action": "startEdit"
+        },
+        "save": {
+          "action": "saveEdit"
+        },
+        "cancel": {
+          "action": "cancelEdit"
+        }
       }
     },
     "btn": {
       "type": "ActionButton",
-      "props": { "label": "Save Document" },
-      "on": { "click": { "action": "saveDoc" } }
+      "props": {
+        "label": "Save Document"
+      },
+      "on": {
+        "click": {
+          "action": "saveDoc"
+        }
+      }
     },
     "status": {
       "type": "BoundField",
-      "props": { "bind": "/savedAt", "label": "Last saved at" }
+      "props": {
+        "bind": "/savedAt",
+        "label": "Last saved at"
+      }
     }
   }
 }

@@ -6,48 +6,114 @@
       "props": {
         "title": "Dynamic Columns Table",
         "description": "A table whose columns are decided at runtime. Switch datasets and the rows and columns change together, without a reload.",
-        "technicalDescription": "The table is defined once, without knowing which columns it will show. Pick a different dataset and the table reads that dataset's fields and builds the matching columns. Cells for fields a row does not have render empty. Editing works the same in every dataset."
+        "technicalDescription": "The table is defined once, without knowing which columns it will show. Pick a different dataset and the table reads that dataset's fields and builds the matching columns. Cells for fields a row does not have render empty. Editing works the same in every dataset.",
+        "sourceFolder": "dynamic-columns"
       },
-      "children": ["controls", "table"]
+      "children": [
+        "controls",
+        "table"
+      ]
     },
     "controls": {
       "type": "StackRow",
-      "props": { "gap": "xs", "align": "flex-start" },
-      "children": ["btnUsers", "btnProducts", "btnMixed"]
+      "props": {
+        "gap": "xs",
+        "align": "flex-start"
+      },
+      "children": [
+        "btnUsers",
+        "btnProducts",
+        "btnMixed"
+      ]
     },
     "btnUsers": {
       "type": "ActionButton",
-      "props": { "label": "Load Users" },
-      "on": { "click": { "action": "loadDataset", "params": { "dataset": "users" } } }
+      "props": {
+        "label": "Load Users"
+      },
+      "on": {
+        "click": {
+          "action": "loadDataset",
+          "params": {
+            "dataset": "users"
+          }
+        }
+      }
     },
     "btnProducts": {
       "type": "ActionButton",
-      "props": { "label": "Load Products" },
-      "on": { "click": { "action": "loadDataset", "params": { "dataset": "products" } } }
+      "props": {
+        "label": "Load Products"
+      },
+      "on": {
+        "click": {
+          "action": "loadDataset",
+          "params": {
+            "dataset": "products"
+          }
+        }
+      }
     },
     "btnMixed": {
       "type": "ActionButton",
-      "props": { "label": "Load Mixed (ragged)" },
-      "on": { "click": { "action": "loadDataset", "params": { "dataset": "mixed" } } }
+      "props": {
+        "label": "Load Mixed (ragged)"
+      },
+      "on": {
+        "click": {
+          "action": "loadDataset",
+          "params": {
+            "dataset": "mixed"
+          }
+        }
+      }
     },
-    "table": { "type": "Table", "children": ["thead", "tbody"] },
-    "thead": { "type": "THead", "children": ["headerRow"] },
+    "table": {
+      "type": "Table",
+      "children": [
+        "thead",
+        "tbody"
+      ]
+    },
+    "thead": {
+      "type": "THead",
+      "children": [
+        "headerRow"
+      ]
+    },
     "headerRow": {
       "type": "Tr",
-      "repeat": { "path": "/colDefs" },
-      "children": ["headerCell"]
+      "repeat": {
+        "path": "/colDefs"
+      },
+      "children": [
+        "headerCell"
+      ]
     },
-    "headerCell": { "type": "ColumnHeader" },
+    "headerCell": {
+      "type": "ColumnHeader"
+    },
     "tbody": {
       "type": "TBody",
-      "repeat": { "path": "/data", "key": "__id" },
-      "children": ["tr"]
+      "repeat": {
+        "path": "/data",
+        "key": "__id"
+      },
+      "children": [
+        "tr"
+      ]
     },
     "tr": {
       "type": "Tr",
-      "repeat": { "path": "/colDefs" },
-      "children": ["cell"]
+      "repeat": {
+        "path": "/colDefs"
+      },
+      "children": [
+        "cell"
+      ]
     },
-    "cell": { "type": "DataCell" }
+    "cell": {
+      "type": "DataCell"
+    }
   }
 }

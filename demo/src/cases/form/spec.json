@@ -3,24 +3,45 @@
   "elements": {
     "card": {
       "type": "CaseContainer",
-      "props": { "title": "Bound Editable Fields", "description": "A small form with editable fields. Click Edit to type, Save to keep your changes, or Cancel to undo them.", "technicalDescription": "The fields start read-only. Click Edit and they become editable, with Save and Cancel buttons. Save writes your changes into the page's data. Cancel restores the values from before you started editing." },
-      "children": ["toggleBtn", "name", "email"]
+      "props": {
+        "title": "Bound Editable Fields",
+        "description": "A small form with editable fields. Click Edit to type, Save to keep your changes, or Cancel to undo them.",
+        "technicalDescription": "The fields start read-only. Click Edit and they become editable, with Save and Cancel buttons. Save writes your changes into the page's data. Cancel restores the values from before you started editing.",
+        "sourceFolder": "form"
+      },
+      "children": [
+        "toggleBtn",
+        "name",
+        "email"
+      ]
     },
     "toggleBtn": {
       "type": "EditToggle",
       "on": {
-        "edit": { "action": "startEdit" },
-        "save": { "action": "saveEdit" },
-        "cancel": { "action": "cancelEdit" }
+        "edit": {
+          "action": "startEdit"
+        },
+        "save": {
+          "action": "saveEdit"
+        },
+        "cancel": {
+          "action": "cancelEdit"
+        }
       }
     },
     "name": {
       "type": "BoundField",
-      "props": { "bind": "name", "label": "Name" }
+      "props": {
+        "bind": "name",
+        "label": "Name"
+      }
     },
     "email": {
       "type": "BoundField",
-      "props": { "bind": "email", "label": "Email" }
+      "props": {
+        "bind": "email",
+        "label": "Email"
+      }
     }
   }
 }

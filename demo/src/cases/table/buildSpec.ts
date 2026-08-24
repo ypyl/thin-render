@@ -8,6 +8,7 @@ export function buildTableSpec(itemCount: number): Spec {
       container: {
         type: "CaseContainer",
         props: {
+          sourceFolder: "table",
           title: `${itemCount}-Row HTML Table`,
           description: "The same 1,000 rows as a real HTML table with a header row, editable cells, and per-row delete.",
           technicalDescription: "The data is displayed as a proper HTML table: a header row and 1,000 body rows. Each cell is editable in place and every row has a delete button. The table structure, including the header and body sections, is defined in the page data rather than in code.",

@@ -3,12 +3,21 @@
   "elements": {
     "card": {
       "type": "CaseContainer",
-      "props": { "title": "Basic Static Rendering", "description": "A single greeting card. The whole page is described as data, not code, and there is nothing to interact with.", "technicalDescription": "This page has no state and no actions. The layout is defined once as plain data and the library renders it as the greeting card you see. Because nothing can change, the page never updates." },
-      "children": ["greeting"]
+      "props": {
+        "title": "Basic Static Rendering",
+        "description": "A single greeting card. The whole page is described as data, not code, and there is nothing to interact with.",
+        "technicalDescription": "This page has no state and no actions. The layout is defined once as plain data and the library renders it as the greeting card you see. Because nothing can change, the page never updates.",
+        "sourceFolder": "basic"
+      },
+      "children": [
+        "greeting"
+      ]
     },
     "greeting": {
       "type": "StaticText",
-      "props": { "text": "Hello from thin-render!" }
+      "props": {
+        "text": "Hello from thin-render!"
+      }
     }
   }
 }

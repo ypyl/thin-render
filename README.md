@@ -326,7 +326,7 @@ interface ActionBinding {
 
 ## Demo
 
-The demo app (`demo/`) has twenty self-contained cases:
+The demo app (`demo/`) has twenty self-contained cases. Each case page shows a **View source on GitHub** link (top-right) pointing to its own folder under `demo/src/cases/`.
 
 | Case | What it shows | Source |
 |-----|---------------|--------|

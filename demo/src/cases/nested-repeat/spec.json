@@ -6,14 +6,22 @@
       "props": {
         "title": "Nested Repeat via $item Expression",
         "description": "A two-level list: categories on the outside, and editable items inside each category.",
-        "technicalDescription": "The page shows categories, and each category contains its own small form of items. Every item belongs to its category: editing an item changes that item's data within its category. The structure is described once and repeated for every category and item."
+        "technicalDescription": "The page shows categories, and each category contains its own small form of items. Every item belongs to its category: editing an item changes that item's data within its category. The structure is described once and repeated for every category and item.",
+        "sourceFolder": "nested-repeat"
       },
-      "children": ["categoryList"]
+      "children": [
+        "categoryList"
+      ]
     },
     "categoryList": {
       "type": "CategoryGroup",
-      "repeat": { "path": "/categories" },
-      "children": ["categoryTitle", "itemList"]
+      "repeat": {
+        "path": "/categories"
+      },
+      "children": [
+        "categoryTitle",
+        "itemList"
+      ]
     },
     "categoryTitle": {
       "type": "CategoryTitle",
@@ -21,16 +29,29 @@
     },
     "itemList": {
       "type": "ItemRow",
-      "repeat": { "path": { "$item": "items" } },
-      "children": ["itemName", "itemQty"]
+      "repeat": {
+        "path": {
+          "$item": "items"
+        }
+      },
+      "children": [
+        "itemName",
+        "itemQty"
+      ]
     },
     "itemName": {
       "type": "BoundField",
-      "props": { "bind": "name", "label": "Name" }
+      "props": {
+        "bind": "name",
+        "label": "Name"
+      }
     },
     "itemQty": {
       "type": "BoundField",
-      "props": { "bind": "qty", "label": "Qty" }
+      "props": {
+        "bind": "qty",
+        "label": "Qty"
+      }
     }
   }
 }

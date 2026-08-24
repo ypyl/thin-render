@@ -8,6 +8,7 @@ export function buildDashboardSpec(): Spec {
       container: {
         type: "CaseContainer",
         props: {
+          sourceFolder: "feature-flags",
           title: "Feature Flags Dashboard",
           description: "A feature-flag dashboard. Toggle features on and off, set rollout percentages with sliders, and switch environments.",
           technicalDescription: "The dashboard manages three kinds of settings: on/off toggles for features, percentage sliders for how widely a feature is rolled out, and a choice of environment. Every control updates the page's data immediately, and the banner and badges reflect your current choices.",

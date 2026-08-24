@@ -6,53 +6,117 @@
       "props": {
         "title": "XLSX Export",
         "description": "Edit a small table of data, then click Download XLSX to export it as a spreadsheet file.",
-        "technicalDescription": "The page is a data editor: change the title or any cell and the data updates. The Download XLSX button takes the current data and produces a spreadsheet file from it, including the title and the full table. The spreadsheet always mirrors what you see on screen."
+        "technicalDescription": "The page is a data editor: change the title or any cell and the data updates. The Download XLSX button takes the current data and produces a spreadsheet file from it, including the title and the full table. The spreadsheet always mirrors what you see on screen.",
+        "sourceFolder": "xlsx-export"
       },
-      "children": ["titleField", "dataTable"]
+      "children": [
+        "titleField",
+        "dataTable"
+      ]
     },
     "titleField": {
       "type": "BoundField",
-      "props": { "bind": "/title", "label": "Report Title" }
+      "props": {
+        "bind": "/title",
+        "label": "Report Title"
+      }
     },
     "dataTable": {
       "type": "Table",
       "props": {},
-      "children": ["tableHead", "tableBody"]
+      "children": [
+        "tableHead",
+        "tableBody"
+      ]
     },
     "tableHead": {
       "type": "THead",
-      "children": ["headerRow"]
+      "children": [
+        "headerRow"
+      ]
     },
     "headerRow": {
       "type": "Tr",
-      "children": ["thName", "thQty", "thPrice"]
+      "children": [
+        "thName",
+        "thQty",
+        "thPrice"
+      ]
     },
-    "thName": { "type": "Th", "props": { "text": "Name" } },
-    "thQty": { "type": "Th", "props": { "text": "Qty" } },
-    "thPrice": { "type": "Th", "props": { "text": "Price" } },
+    "thName": {
+      "type": "Th",
+      "props": {
+        "text": "Name"
+      }
+    },
+    "thQty": {
+      "type": "Th",
+      "props": {
+        "text": "Qty"
+      }
+    },
+    "thPrice": {
+      "type": "Th",
+      "props": {
+        "text": "Price"
+      }
+    },
     "tableBody": {
       "type": "TBody",
-      "repeat": { "path": "/rows", "key": "id" },
-      "children": ["row"]
+      "repeat": {
+        "path": "/rows",
+        "key": "id"
+      },
+      "children": [
+        "row"
+      ]
     },
     "row": {
       "type": "Tr",
-      "children": ["cellName", "cellQty", "cellPrice"]
+      "children": [
+        "cellName",
+        "cellQty",
+        "cellPrice"
+      ]
     },
-    "cellName": { "type": "Td", "children": ["nameField"] },
-    "cellQty": { "type": "Td", "children": ["qtyField"] },
-    "cellPrice": { "type": "Td", "children": ["priceField"] },
+    "cellName": {
+      "type": "Td",
+      "children": [
+        "nameField"
+      ]
+    },
+    "cellQty": {
+      "type": "Td",
+      "children": [
+        "qtyField"
+      ]
+    },
+    "cellPrice": {
+      "type": "Td",
+      "children": [
+        "priceField"
+      ]
+    },
     "nameField": {
       "type": "BoundField",
-      "props": { "bind": "name", "label": "" }
+      "props": {
+        "bind": "name",
+        "label": ""
+      }
     },
     "qtyField": {
       "type": "BoundField",
-      "props": { "bind": "qty", "label": "" }
+      "props": {
+        "bind": "qty",
+        "label": ""
+      }
     },
     "priceField": {
       "type": "BoundField",
-      "props": { "bind": "price", "label": "" }
+      "props": {
+        "bind": "price",
+        "label": ""
+      }
     }
   }
 }

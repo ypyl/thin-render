@@ -6,38 +6,81 @@
       "props": {
         "title": "Nested Package",
         "description": "The same small feature appears twice inside one page and once as a standalone card. Each instance keeps its own data.",
-        "technicalDescription": "A small feature, a customer card with editable notes and a Load details button, is used three times: twice embedded in this page and once as its own standalone card. The two embedded copies store their data inside this page's data, so each holds its own values. The standalone copy works exactly like the others but keeps its data separately."
+        "technicalDescription": "A small feature, a customer card with editable notes and a Load details button, is used three times: twice embedded in this page and once as its own standalone card. The two embedded copies store their data inside this page's data, so each holds its own values. The standalone copy works exactly like the others but keeps its data separately.",
+        "sourceFolder": "nested-package"
       },
-      "children": ["panels"]
+      "children": [
+        "panels"
+      ]
     },
     "panels": {
       "type": "GridRow",
-      "props": { "cols": { "base": 1, "sm": 2 } },
-      "children": ["topPanel", "bottomPanel", "detailPanel", "standalonePanel"]
+      "props": {
+        "cols": {
+          "base": 1,
+          "sm": 2
+        }
+      },
+      "children": [
+        "topPanel",
+        "bottomPanel",
+        "detailPanel",
+        "standalonePanel"
+      ]
     },
     "topPanel": {
       "type": "CaseContainer",
-      "props": { "title": "Embedded at /top/customer" },
-      "children": ["topChild"]
+      "props": {
+        "title": "Embedded at /top/customer"
+      },
+      "children": [
+        "topChild"
+      ]
     },
-    "topChild": { "type": "EmbeddedChild", "props": { "base": "/top/customer" } },
+    "topChild": {
+      "type": "EmbeddedChild",
+      "props": {
+        "base": "/top/customer"
+      }
+    },
     "bottomPanel": {
       "type": "CaseContainer",
-      "props": { "title": "Embedded at /bottom/customer" },
-      "children": ["bottomChild"]
+      "props": {
+        "title": "Embedded at /bottom/customer"
+      },
+      "children": [
+        "bottomChild"
+      ]
     },
-    "bottomChild": { "type": "EmbeddedChild", "props": { "base": "/bottom/customer" } },
+    "bottomChild": {
+      "type": "EmbeddedChild",
+      "props": {
+        "base": "/bottom/customer"
+      }
+    },
     "standalonePanel": {
       "type": "CaseContainer",
-      "props": { "title": "Standalone (own store)" },
-      "children": ["standaloneChild"]
+      "props": {
+        "title": "Standalone (own store)"
+      },
+      "children": [
+        "standaloneChild"
+      ]
     },
-    "standaloneChild": { "type": "StandaloneChild" },
+    "standaloneChild": {
+      "type": "StandaloneChild"
+    },
     "detailPanel": {
       "type": "CaseContainer",
-      "props": { "title": "Detail (fetched by parent handler)" },
-      "children": ["detailContent"]
+      "props": {
+        "title": "Detail (fetched by parent handler)"
+      },
+      "children": [
+        "detailContent"
+      ]
     },
-    "detailContent": { "type": "DetailPanel" }
+    "detailContent": {
+      "type": "DetailPanel"
+    }
   }
 }

@@ -6,55 +6,84 @@
       "props": {
         "title": "Named Slots",
         "description": "A page layout with named areas: header, sidebar, content, and footer. Cards below are generated from a list of items.",
-        "technicalDescription": "The page is assembled from named areas, and each area renders its own content: a header, a three-item sidebar, the main content, and a footer. The cards below come from a list: every item produces a card with its own title and body. The same layout definition places each piece in its spot."
+        "technicalDescription": "The page is assembled from named areas, and each area renders its own content: a header, a three-item sidebar, the main content, and a footer. The cards below come from a list: every item produces a card with its own title and body. The same layout definition places each piece in its spot.",
+        "sourceFolder": "named-slots"
       },
-      "children": ["layout", "cards"]
+      "children": [
+        "layout",
+        "cards"
+      ]
     },
     "layout": {
       "type": "Page",
       "children": {
         "header": "pageTitle",
-        "sidebar": ["link1", "link2", "link3"],
+        "sidebar": [
+          "link1",
+          "link2",
+          "link3"
+        ],
         "content": "mainText",
         "footer": "pageFooter"
       }
     },
     "pageTitle": {
       "type": "StaticText",
-      "props": { "text": "📌 Page header — placed via the header slot" }
+      "props": {
+        "text": "📌 Page header — placed via the header slot"
+      }
     },
     "link1": {
       "type": "StaticText",
-      "props": { "text": "🔗 Link one" }
+      "props": {
+        "text": "🔗 Link one"
+      }
     },
     "link2": {
       "type": "StaticText",
-      "props": { "text": "🔗 Link two" }
+      "props": {
+        "text": "🔗 Link two"
+      }
     },
     "link3": {
       "type": "StaticText",
-      "props": { "text": "🔗 Link three" }
+      "props": {
+        "text": "🔗 Link three"
+      }
     },
     "mainText": {
       "type": "StaticText",
-      "props": { "text": "Main content — rendered in the content slot, to the right of the sidebar. Note the spec declares header first, but this element still renders in the middle: the component decides where each slot goes." }
+      "props": {
+        "text": "Main content — rendered in the content slot, to the right of the sidebar. Note the spec declares header first, but this element still renders in the middle: the component decides where each slot goes."
+      }
     },
     "pageFooter": {
       "type": "StaticText",
-      "props": { "text": "© Footer — rendered below everything via the footer slot" }
+      "props": {
+        "text": "© Footer — rendered below everything via the footer slot"
+      }
     },
     "cards": {
       "type": "SlotCard",
-      "repeat": { "path": "/cards" },
-      "children": { "title": "cardTitle", "body": "cardBody" }
+      "repeat": {
+        "path": "/cards"
+      },
+      "children": {
+        "title": "cardTitle",
+        "body": "cardBody"
+      }
     },
     "cardTitle": {
       "type": "SlotText",
-      "props": { "field": "title" }
+      "props": {
+        "field": "title"
+      }
     },
     "cardBody": {
       "type": "SlotText",
-      "props": { "field": "body" }
+      "props": {
+        "field": "body"
+      }
     }
   }
 }

@@ -3,58 +3,121 @@
   "elements": {
     "card": {
       "type": "CaseContainer",
-      "props": { "title": "Switch Demo", "description": "A status panel that shows one of three views. Set the status to Loading, Loaded, or Error and the page swaps to the matching view.", "technicalDescription": "Exactly one of three views is visible at any time, depending on the current status. The buttons set the status: Loading shows a spinner, Loaded shows the data card, Error shows an error card. Switching status swaps the view instantly." },
-      "children": ["buttons", "statusLabel", "switch"]
+      "props": {
+        "title": "Switch Demo",
+        "description": "A status panel that shows one of three views. Set the status to Loading, Loaded, or Error and the page swaps to the matching view.",
+        "technicalDescription": "Exactly one of three views is visible at any time, depending on the current status. The buttons set the status: Loading shows a spinner, Loaded shows the data card, Error shows an error card. Switching status swaps the view instantly.",
+        "sourceFolder": "switch"
+      },
+      "children": [
+        "buttons",
+        "statusLabel",
+        "switch"
+      ]
     },
     "buttons": {
       "type": "ButtonGroup",
-      "children": ["btnLoading", "btnLoaded", "btnError"]
+      "children": [
+        "btnLoading",
+        "btnLoaded",
+        "btnError"
+      ]
     },
     "btnLoading": {
       "type": "ActionButton",
-      "props": { "label": "Loading" },
-      "on": { "click": { "action": "setStatus", "params": { "status": "loading" } } }
+      "props": {
+        "label": "Loading"
+      },
+      "on": {
+        "click": {
+          "action": "setStatus",
+          "params": {
+            "status": "loading"
+          }
+        }
+      }
     },
     "btnLoaded": {
       "type": "ActionButton",
-      "props": { "label": "Loaded" },
-      "on": { "click": { "action": "setStatus", "params": { "status": "loaded" } } }
+      "props": {
+        "label": "Loaded"
+      },
+      "on": {
+        "click": {
+          "action": "setStatus",
+          "params": {
+            "status": "loaded"
+          }
+        }
+      }
     },
     "btnError": {
       "type": "ActionButton",
-      "props": { "label": "Error" },
-      "on": { "click": { "action": "setStatus", "params": { "status": "error" } } }
+      "props": {
+        "label": "Error"
+      },
+      "on": {
+        "click": {
+          "action": "setStatus",
+          "params": {
+            "status": "error"
+          }
+        }
+      }
     },
     "statusLabel": {
       "type": "BoundField",
-      "props": { "bind": "/appStatus", "label": "Current Status" }
+      "props": {
+        "bind": "/appStatus",
+        "label": "Current Status"
+      }
     },
     "switch": {
       "type": "Switch",
-      "props": { "path": "/appStatus" },
-      "children": { "loading": "loading", "loaded": "loaded", "error": "error" }
+      "props": {
+        "path": "/appStatus"
+      },
+      "children": {
+        "loading": "loading",
+        "loaded": "loaded",
+        "error": "error"
+      }
     },
     "loading": {
       "type": "StaticText",
-      "props": { "text": "⏳ Loading..." }
+      "props": {
+        "text": "⏳ Loading..."
+      }
     },
     "loaded": {
       "type": "Card",
-      "props": { "title": "✅ Loaded" },
-      "children": ["loadedText"]
+      "props": {
+        "title": "✅ Loaded"
+      },
+      "children": [
+        "loadedText"
+      ]
     },
     "loadedText": {
       "type": "StaticText",
-      "props": { "text": "Data loaded successfully!" }
+      "props": {
+        "text": "Data loaded successfully!"
+      }
     },
     "error": {
       "type": "Card",
-      "props": { "title": "❌ Error" },
-      "children": ["errorText"]
+      "props": {
+        "title": "❌ Error"
+      },
+      "children": [
+        "errorText"
+      ]
     },
     "errorText": {
       "type": "StaticText",
-      "props": { "text": "Something went wrong." }
+      "props": {
+        "text": "Something went wrong."
+      }
     }
   }
 }

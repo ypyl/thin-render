@@ -8,6 +8,7 @@ export function buildSpec(): Spec {
       container: {
         type: "CaseContainer",
         props: {
+          sourceFolder: "mantine-table",
           title: "Mantine Table with Pagination",
           description: "A paginated table with 300 rows, 10 per page. Click the page numbers to browse.",
           technicalDescription: "The table holds 300 rows but renders only 10 at a time. The page controls below let you browse through the data, and the current page is remembered in the page's state. Turning the page does not reload the table.",

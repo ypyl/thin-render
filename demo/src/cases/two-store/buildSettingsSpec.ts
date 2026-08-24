@@ -8,6 +8,7 @@ export function buildSettingsSpec(): Spec {
       container: {
         type: "CaseContainer",
         props: {
+          sourceFolder: "two-store",
           title: "Settings",
           description: "Change the title, color, or size below, then click Apply to update the preview.",
           technicalDescription: "The page has two independent sections: a settings panel and a preview. Editing the fields changes only the settings panel. The preview updates only when you click Apply, which copies the current settings across.",

@@ -14,6 +14,8 @@ npm run dev    # starts at http://localhost:5173
 
 ## Cases
 
+Each case page shows a **View source on GitHub** link (top-right) pointing to its own folder under `demo/src/cases/`.
+
 | Case | What it shows |
 |------|---------------|
 | **Basic** | A static greeting card; the page is described as data and nothing is interactive. |
